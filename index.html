@@ -53,15 +53,14 @@ let selectedSquare = null;
 
 window.onload = function() {
     boardElement = document.getElementById('chess-board');
-    // Garante que o Chess.js carregou
     if (typeof Chess === 'undefined') {
-        alert("Erro: Biblioteca Chess.js não carregou. Verifique sua conexão.");
+        alert("Erro: Biblioteca Chess.js não carregou.");
         return;
     }
     game = new Chess();
-    draw();
-
-    document.getElementById('btn-sorteio').onclick = novoJogo;
+    
+    // Chama o sorteio logo ao abrir a página
+    novoJogo(); 
 };
 
 function draw() {
@@ -171,3 +170,4 @@ function checkGameOver() {
 </script>
 </body>
 </html>
+
