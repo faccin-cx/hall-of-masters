@@ -87,22 +87,56 @@ window.onload = function() {
         
         draw();
     }
+let userColor = 'w'; // 'w' para Brancas, 'b' para Pretas
 
     // --- BOTÃO SORTEIO ---
     const mestres = ["Anand", "Capablanca", "Carlsen", "Fischer", "Karpov", "Keres", "Lasker", "Marshall", "Polgar", "Rubinstein", "Tal"];
+    
     document.getElementById('btn-sorteio').onclick = function() {
         const m = mestres[Math.floor(Math.random() * mestres.length)];
         mestreActual = m;
         document.getElementById('nome-mestre').innerText = m.toUpperCase();
         document.getElementById('foto-mestre').src = m + ".jpg";
+        
         game.reset();
         
-        // Se o sorteio for para tu jogares de pretas, o mestre faz o 1. d4!
-        // Como o teu treino é Tarrasch contra d4, vamos forçar o mestre a começar:
-        game.move("d4"); 
-        draw();
+        // Sorteio de cor: 50% de chance para cada
+        userColor = Math.random() > 0.5 ? 'w' : 'b';
+        
+        if (userColor === 'b') {
+            console.log("Tu jogas de Pretas. O mestre começa!");
+            // Se jogas de pretas, o mestre faz o 1º lance
+            setTimeout(jogadaDoMestre, 500); 
+        } else {
+            console.log("Tu jogas de Brancas. Faz o teu lance!");
+        }
+        
+        draw(); 
     };
 
-    draw();
-};
+    // Ajuste na handleSquareClick para respeitar a cor sorteada
+    function handleSquareClick(pos) {
+        const piece = game.get(pos);
+        
+        if (!selectedSquare) {
+            // Só permite selecionar peças da cor do utilizador
+            if (piece && piece.color === userColor) {
+                selectedSquare = pos;
+                draw();
+            }
+        } else {
+            const move = game.move({ from: selectedSquare, to: pos, promotion: 'q' });
+            selectedSquare = null;
+            if (move) {
+                draw();
+                // Após o teu lance, o mestre responde se o jogo não acabou
+                if (!game.game_over()) {
+                    setTimeout(jogadaDoMestre, 600);
+                }
+            } else {
+                draw();
+            }
+        }
+    }
 </script>
+
