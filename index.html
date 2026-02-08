@@ -2,15 +2,38 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Hall of Masters - Definitive Visual</title>
+    <meta name="color-scheme" content="light only">
+    <title>Hall of Masters - Professional Wood</title>
+    <style>
+        :root { color-scheme: light; }
+        body { 
+            background: #161512; 
+            color: #fff; 
+            font-family: sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+        }
+        /* Efeito de madeira usando gradientes radiais para simular veios */
+        .wood-light {
+            background: #f0d9b5;
+            background-image: radial-gradient(circle at 50% 50%, #f4e2c6 0%, #f0d9b5 100%);
+        }
+        .wood-dark {
+            background: #b58863;
+            background-image: radial-gradient(circle at 50% 50%, #bd926d 0%, #b58863 100%);
+        }
+    </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <script src="cerebro_mestres_leve.js"></script>
 </head>
-<body style="background: #161512; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0;">
+<body>
 
 <div style="display: flex; gap: 40px; flex-wrap: wrap; justify-content: center;">
-    <div id="board-container" style="width: 480px; height: 480px; border: 12px solid #3d2d1e; box-shadow: 0 10px 50px rgba(0,0,0,0.7); position: relative;">
+    <div id="board-container" style="width: 480px; height: 480px; border: 12px solid #3d2d1e; box-shadow: 0 10px 50px rgba(0,0,0,0.8); position: relative;">
         <div id="chess-board" style="width: 100%; height: 100%; position: relative;"></div>
     </div>
 
@@ -26,23 +49,15 @@
 let game = new Chess();
 let userColor = 'w';
 let selectedSquare = null;
-let mestreActual = "";
 let stockfish = null;
 
-// Configuração das Imagens das Peças (Alpha Theme)
 const pieceImages = {
-    'wP': 'https://lichess1.org/assets/piece/alpha/wP.svg',
-    'wN': 'https://lichess1.org/assets/piece/alpha/wN.svg',
-    'wB': 'https://lichess1.org/assets/piece/alpha/wB.svg',
-    'wR': 'https://lichess1.org/assets/piece/alpha/wR.svg',
-    'wQ': 'https://lichess1.org/assets/piece/alpha/wQ.svg',
-    'wK': 'https://lichess1.org/assets/piece/alpha/wK.svg',
-    'bP': 'https://lichess1.org/assets/piece/alpha/bP.svg',
-    'bN': 'https://lichess1.org/assets/piece/alpha/bN.svg',
-    'bB': 'https://lichess1.org/assets/piece/alpha/bB.svg',
-    'bR': 'https://lichess1.org/assets/piece/alpha/bR.svg',
-    'bQ': 'https://lichess1.org/assets/piece/alpha/bQ.svg',
-    'bK': 'https://lichess1.org/assets/piece/alpha/bK.svg'
+    'wP': 'https://lichess1.org/assets/piece/alpha/wP.svg', 'wN': 'https://lichess1.org/assets/piece/alpha/wN.svg',
+    'wB': 'https://lichess1.org/assets/piece/alpha/wB.svg', 'wR': 'https://lichess1.org/assets/piece/alpha/wR.svg',
+    'wQ': 'https://lichess1.org/assets/piece/alpha/wQ.svg', 'wK': 'https://lichess1.org/assets/piece/alpha/wK.svg',
+    'bP': 'https://lichess1.org/assets/piece/alpha/bP.svg', 'bN': 'https://lichess1.org/assets/piece/alpha/bN.svg',
+    'bB': 'https://lichess1.org/assets/piece/alpha/bB.svg', 'bR': 'https://lichess1.org/assets/piece/alpha/bR.svg',
+    'bQ': 'https://lichess1.org/assets/piece/alpha/bQ.svg', 'bK': 'https://lichess1.org/assets/piece/alpha/bK.svg'
 };
 
 try {
@@ -58,7 +73,6 @@ function draw() {
 
     for(let r=0; r<8; r++) {
         for(let c=0; c<8; c++) {
-            // Orientação do tabuleiro baseada na cor do jogador
             const vRow = (userColor === 'w') ? r : 7 - r;
             const vCol = (userColor === 'w') ? c : 7 - c;
 
@@ -69,12 +83,11 @@ function draw() {
             sq.style.left = (vCol * 12.5) + '%';
             sq.style.top = (vRow * 12.5) + '%';
             
-            // LÓGICA DE COR: a1 (r7, c0) deve ser ESCURA.
-            // (r + c) % 2 === 0 é CLARA (#f0d9b5), % 2 !== 0 é ESCURA (#b58863).
-            sq.style.backgroundColor = (r + c) % 2 === 0 ? '#f0d9b5' : '#b58863';
+            // Aplicando as classes de madeira com gradiente
+            sq.className = (r + c) % 2 === 0 ? 'wood-light' : 'wood-dark';
 
             const pos = String.fromCharCode(97 + c) + (8 - r);
-            if (selectedSquare === pos) sq.style.backgroundColor = "rgba(255, 255, 0, 0.6)";
+            if (selectedSquare === pos) sq.style.boxShadow = "inset 0 0 15px 5px rgba(255, 255, 0, 0.5)";
 
             const piece = layout[r][c];
             if(piece) {
@@ -82,7 +95,7 @@ function draw() {
                 img.style.width = '100%';
                 img.style.height = '100%';
                 img.style.backgroundImage = `url(${pieceImages[piece.color + piece.type.toUpperCase()]})`;
-                img.style.backgroundSize = 'contain';
+                img.style.backgroundSize = '85%';
                 img.style.backgroundRepeat = 'no-repeat';
                 img.style.backgroundPosition = 'center';
                 sq.appendChild(img);
@@ -105,7 +118,7 @@ function handleMove(pos) {
         selectedSquare = null;
         if (move) {
             draw();
-            document.getElementById('status').innerText = "Mestre a pensar...";
+            document.getElementById('status').innerText = "O Mestre está a pensar...";
             setTimeout(mestrePlay, 600);
         } else {
             if (p && p.color === userColor) selectedSquare = pos;
@@ -129,16 +142,24 @@ function mestrePlay() {
 
 function novoJogo() {
     const mestres = ["Anand", "Capablanca", "Carlsen", "Fischer", "Karpov", "Keres", "Lasker", "Marshall", "Polgar", "Rubinstein", "Tal"];
-    mestreActual = mestres[Math.floor(Math.random() * mestres.length)];
-    document.getElementById('nome-mestre').innerText = mestreActual.toUpperCase();
-    document.getElementById('foto-mestre').src = mestreActual + ".jpg";
+    const mestre = mestres[Math.floor(Math.random() * mestres.length)];
+    document.getElementById('nome-mestre').innerText = mestre.toUpperCase();
+    document.getElementById('foto-mestre').src = mestre + ".jpg";
     
     game.reset();
     userColor = Math.random() > 0.5 ? 'w' : 'b';
     selectedSquare = null;
     document.getElementById('status').innerText = `Estás de ${userColor === 'w' ? 'Brancas' : 'Pretas'}`;
     draw();
-    if (userColor === 'b') setTimeout(mestrePlay, 1000);
+    
+    // Se o mestre estiver de brancas, ele joga 1. d4 como abertura padrão para o teu treino
+    if (userColor === 'b') {
+        setTimeout(() => {
+            game.move("d4");
+            draw();
+            document.getElementById('status').innerText = "O Mestre jogou 1. d4. Tua vez!";
+        }, 1000);
+    }
 }
 
 window.onload = novoJogo;
