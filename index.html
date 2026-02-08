@@ -2,18 +2,11 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="color-scheme" content="light">
-    <title>Hall of Masters - Wood Edition</title>
+    <title>Hall of Masters - Estabilidade Total</title>
     <style>
-        /* Bloqueio drástico contra extensões de Dark Mode */
-        html, body, div, img {
-            filter: none !important;
-            color-scheme: light !important;
-        }
-        
         body { 
-            background: #161512 !important; 
-            color: #fff !important; 
+            background: #161512; 
+            color: #fff; 
             font-family: sans-serif; 
             display: flex; 
             justify-content: center; 
@@ -22,15 +15,9 @@
             margin: 0; 
         }
 
-        /* Casas com texturas de madeira real (Imagens) */
-        .wood-light {
-            background-image: url('https://images.chesscomfiles.com/chess-themes/boards/wood/light.png') !important;
-            background-size: cover !important;
-        }
-        .wood-dark {
-            background-image: url('https://images.chesscomfiles.com/chess-themes/boards/wood/dark.png') !important;
-            background-size: cover !important;
-        }
+        /* Cores sólidas clássicas do Lichess/Chess.com para evitar erros de carregamento */
+        .wood-light { background-color: #f0d9b5 !important; }
+        .wood-dark { background-color: #b58863 !important; }
 
         #chess-board {
             width: 480px;
@@ -38,12 +25,13 @@
             display: grid;
             grid-template-columns: repeat(8, 1fr);
             grid-template-rows: repeat(8, 1fr);
+            border: 5px solid #3d2d1e;
         }
 
         .square {
-            position: relative;
             width: 60px;
             height: 60px;
+            position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -52,15 +40,14 @@
         .piece {
             width: 100%;
             height: 100%;
-            background-size: contain;
+            background-size: 90%;
             background-repeat: no-repeat;
             background-position: center;
-            z-index: 2;
+            cursor: pointer;
         }
-        
+
         .selected {
-            box-shadow: inset 0 0 0 5px rgba(255, 255, 0, 0.5) !important;
-            background-color: rgba(255, 255, 0, 0.2) !important;
+            background-color: rgba(255, 255, 0, 0.5) !important;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js"></script>
@@ -70,7 +57,7 @@
 <body>
 
 <div style="display: flex; gap: 40px; flex-wrap: wrap; justify-content: center;">
-    <div id="board-container" style="border: 15px solid #3d2d1e; box-shadow: 0 20px 60px rgba(0,0,0,0.8); border-radius: 4px;">
+    <div id="board-container">
         <div id="chess-board"></div>
     </div>
 
@@ -110,11 +97,12 @@ function draw() {
 
     for(let r=0; r<8; r++) {
         for(let c=0; c<8; c++) {
-            const vRow = (userColor === 'w') ? r : 7 - r;
-            const vCol = (userColor === 'w') ? c : 7 - c;
-
+            // A lógica de r e c garante que o tabuleiro seja desenhado corretamente
             const sq = document.createElement('div');
-            sq.className = 'square ' + ((r + c) % 2 === 0 ? 'wood-light' : 'wood-dark');
+            
+            // Lógica para alternar cores: (r+c) par = clara, ímpar = escura
+            const isLight = (r + c) % 2 === 0;
+            sq.className = 'square ' + (isLight ? 'wood-light' : 'wood-dark');
             
             const pos = String.fromCharCode(97 + c) + (8 - r);
             if (selectedSquare === pos) sq.classList.add('selected');
@@ -173,18 +161,10 @@ function novoJogo() {
     document.getElementById('foto-mestre').src = mestre + ".jpg";
     
     game.reset();
-    userColor = Math.random() > 0.5 ? 'w' : 'b';
+    userColor = 'w'; // Começar de brancas para testar se o tabuleiro aparece
     selectedSquare = null;
-    document.getElementById('status').innerText = `Estás de ${userColor === 'w' ? 'Brancas' : 'Pretas'}`;
+    document.getElementById('status').innerText = "Estás de Brancas!";
     draw();
-    
-    if (userColor === 'b') {
-        setTimeout(() => {
-            game.move("d4");
-            draw();
-            document.getElementById('status').innerText = "O Mestre abriu com 1. d4!";
-        }, 1000);
-    }
 }
 
 window.onload = novoJogo;
