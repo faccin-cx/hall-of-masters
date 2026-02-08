@@ -11,9 +11,10 @@
         #foto-mestre { width: 200px; height: 200px; border-radius: 8px; border: 3px solid #c3a000; margin-bottom: 20px; object-fit: cover; }
         .nome-mestre { color: #ffd700; font-size: 1.8em; font-weight: bold; margin-bottom: 25px; text-align: center; }
         .btn { width: 100%; padding: 20px; background: #c3a000; color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 8px; font-size: 1.1em; margin-bottom: 10px; }
+        .btn:hover { background: #e6bc00; }
         #chess-board { width: 100%; height: 100%; position: relative; }
         
-        /* Peças */
+        /* Peças Lichess Style */
         .piece.pawn.white { background-image: url('https://lichess1.org/assets/piece/alpha/wP.svg'); }
         .piece.knight.white { background-image: url('https://lichess1.org/assets/piece/alpha/wN.svg'); }
         .piece.bishop.white { background-image: url('https://lichess1.org/assets/piece/alpha/wB.svg'); }
@@ -40,7 +41,7 @@
         <img id="foto-mestre" src="Tal.jpg" alt="Mestre">
         <div class="nome-mestre" id="nome-mestre">MIKHAIL TAL</div>
         <button class="btn" id="btn-sorteio">Desafiar Mestre</button>
-        <div id="status" style="margin-top: 10px; color: #aaa; font-size: 0.9em;">Aguardando início...</div>
+        <div id="status" style="margin-top: 10px; color: #aaa; font-size: 0.9em; text-align: center;">Aguardando...</div>
     </div>
 </div>
 
@@ -50,15 +51,16 @@ let boardElement;
 let userColor = 'w';
 let mestreActual = "TAL";
 let selectedSquare = null;
+const stockfish = new Worker("https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js");
 
 window.onload = function() {
     boardElement = document.getElementById('chess-board');
     if (typeof Chess === 'undefined') {
-        alert("Erro: Biblioteca Chess.js não carregou.");
+        alert("Erro: Chess.js não carregou.");
         return;
     }
     game = new Chess();
-    // Chama o sorteio logo ao abrir a página
+    document.getElementById('btn-sorteio').onclick = novoJogo;
     novoJogo(); 
 };
 
@@ -68,7 +70,6 @@ function draw() {
 
     for(let r=0; r<8; r++) {
         for(let c=0; c<8; c++) {
-            // Se o usuário for pretas, invertemos a renderização do tabuleiro
             let row = (userColor === 'b') ? 7 - r : r;
             let col = (userColor === 'b') ? 7 - c : c;
 
@@ -104,13 +105,13 @@ function getPieceName(t) {
 
 function novoJogo() {
     const mestres = ["Anand", "Capablanca", "Carlsen", "Fischer", "Karpov", "Keres", "Lasker", "Marshall", "Polgar", "Rubinstein", "Tal"];
-    const m = mestres[Math.floor(Math.random() * mestres.length)];
-    mestreActual = m;
-    document.getElementById('nome-mestre').innerText = m.toUpperCase();
-    document.getElementById('foto-mestre').src = m + ".jpg";
+    mestreActual = mestres[Math.floor(Math.random() * mestres.length)];
+    document.getElementById('nome-mestre').innerText = mestreActual.toUpperCase();
+    document.getElementById('foto-mestre').src = mestreActual + ".jpg";
     
     game.reset();
     userColor = Math.random() > 0.5 ? 'w' : 'b';
+    selectedSquare = null;
     document.getElementById('status').innerText = `Você joga de ${userColor === 'w' ? 'Brancas' : 'Pretas'}`;
     
     if (userColor === 'b') {
@@ -120,6 +121,8 @@ function novoJogo() {
 }
 
 function handleSquareClick(pos) {
+    if (game.game_over()) return;
+    
     const piece = game.get(pos);
     if (!selectedSquare) {
         if (piece && piece.color === userColor) {
@@ -131,7 +134,10 @@ function handleSquareClick(pos) {
         selectedSquare = null;
         if (move) {
             draw();
-            if (!game.game_over()) setTimeout(jogadaDoMestre, 600);
+            if (!game.game_over()) {
+                document.getElementById('status').innerText = mestreActual + " pensando...";
+                setTimeout(jogadaDoMestre, 600);
+            }
         } else {
             draw();
         }
@@ -139,35 +145,47 @@ function handleSquareClick(pos) {
 }
 
 function jogadaDoMestre() {
-    const fen = game.fen().split(" ")[0];
-    const mestre = mestreActual.toUpperCase();
-    let moveUCI = null;
-
-    if (typeof BANDO_DE_DADOS_MESTRES !== 'undefined' && BANDO_DE_DADOS_MESTRES[mestre]) {
-        const lances = BANDO_DE_DADOS_MESTRES[mestre][fen];
-        if (lances) {
-            moveUCI = Object.keys(lances).reduce((a, b) => lances[a] > lances[b] ? a : b);
-            console.log("Lance histórico encontrado!");
+    const fenSimplificado = game.fen().split(" ")[0];
+    const mestreKey = mestreActual.toUpperCase();
+    
+    // 1. Tentar Memória do PGN
+    if (typeof BANDO_DE_DADOS_MESTRES !== 'undefined' && BANDO_DE_DADOS_MESTRES[mestreKey]) {
+        const lancesPossiveis = BANDO_DE_DADOS_MESTRES[mestreKey][fenSimplificado];
+        if (lancesPossiveis) {
+            const moveUCI = Object.keys(lancesPossiveis).reduce((a, b) => lancesPossiveis[a] > lancesPossiveis[b] ? a : b);
+            game.move(moveUCI, { sloppy: true });
+            console.log("Mestre usou memória histórica.");
+            document.getElementById('status').innerText = "Sua vez!";
+            draw();
+            checkGameOver();
+            return;
         }
     }
 
-    if (!moveUCI) {
-        const moves = game.moves();
-        if (moves.length > 0) game.move(moves[Math.floor(Math.random() * moves.length)]);
-    } else {
-        game.move(moveUCI, { sloppy: true });
-    }
-    draw();
-    checkGameOver();
+    // 2. Se não tem no PGN, Stockfish assume
+    stockfish.postMessage("position fen " + game.fen());
+    stockfish.postMessage("go depth 13"); // Profundidade 13 é rápida e sólida
+
+    stockfish.onmessage = function(event) {
+        if (event.data.includes("bestmove")) {
+            const move = event.data.split(" ")[1];
+            game.move(move, { sloppy: true });
+            document.getElementById('status').innerText = "Sua vez!";
+            draw();
+            checkGameOver();
+        }
+    };
 }
 
 function checkGameOver() {
     if (game.game_over()) {
-        alert("Fim de jogo!");
+        let msg = "Fim de jogo!";
+        if (game.in_checkmate()) msg = "Xeque-mate!";
+        else if (game.in_draw()) msg = "Empate!";
+        document.getElementById('status').innerText = msg;
+        alert(msg);
     }
 }
 </script>
 </body>
 </html>
-
-
