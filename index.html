@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Hall of Masters - Pro Visual</title>
+    <link rel="stylesheet" href="https://lichess1.org/assets/_899m5u/piece-css/alpha.css">
+    <link rel="stylesheet" href="https://unpkg.com/chessground/assets/chessground.base.css">
+    <link rel="stylesheet" href="https://unpkg.com/chessground/assets/chessground.brown.css">
+    
+    <style>
+        body { 
+            background: #161512; 
+            color: #bababa; 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+
+        .container { display: flex; gap: 30px; align-items: stretch; }
+
+        /* O TABULEIRO ESTILO MADEIRA */
+        .board-wrapper {
+            width: 600px;
+            height: 600px;
+            border: 15px solid #3d2d1e; /* Moldura de madeira escura */
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            border-radius: 4px;
+        }
+
+        /* PAINEL LATERAL PROFISSIONAL */
+        #painel {
+            width: 350px;
+            background: #262421;
+            padding: 30px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        h2 { color: #fff; margin: 0; font-weight: 400; letter-spacing: 1px; }
+        
+        #mestre-info {
+            background: #312e2b;
+            padding: 20px;
+            border-radius: 4px;
+            text-align: center;
+            border-left: 5px solid #c3a000;
+        }
+
+        .mestre-nome { color: #ffd700; font-size: 1.4em; font-weight: bold; display: block; }
+
+        .btn {
+            background: #c3a000;
+            color: #000;
+            border: none;
+            padding: 18px;
+            font-weight: bold;
+            font-size: 1.1em;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover { background: #e6bc00; transform: translateY(-2px); }
+
+        /* Ajuste das peças para o tema Alpha */
+        .cg-wrap { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="board-wrapper">
+        <div id="chess-board" class="cg-wrap brown alpha"></div>
+    </div>
+
+    <div id="painel">
+        <div>
+            <h2>HALL OF MASTERS</h2>
+            <p style="font-size: 0.8em; color: #666;">WEB EDITION V1.0</p>
+            
+            <div id="mestre-info">
+                <span style="font-size: 0.9em; text-transform: uppercase;">Oponente</span>
+                <span class="mestre-nome" id="nome-mestre">Aguardando...</span>
+            </div>
+        </div>
+
+        <button class="btn" onclick="novoMestre()">DESAFIAR NOVO MESTRE</button>
+    </div>
+</div>
+
+<script src="https://unpkg.com/chessground"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+
+<script>
+    const boardNode = document.getElementById('chess-board');
+    const chess = new Chess();
+    
+    // Inicializa o tabuleiro com as configurações do Lichess
+    const cg = Chessground(boardNode, {
+        orientation: 'white',
+        coordinates: true,
+        movable: {
+            free: false,
+            color: 'white',
+            dests: getDests()
+        },
+        events: {
+            after: (orig, dest) => {
+                chess.move({ from: orig, to: dest, promotion: 'q' });
+                cg.set({ dests: getDests() });
+            }
+        }
+    });
+
+    // Função para calcular movimentos legais (evita movimentos impossíveis)
+    function getDests() {
+        const dests = new Map();
+        chess.SQUARES.forEach(s => {
+            const ms = chess.moves({ square: s, verbose: true });
+            if (ms.length) dests.set(s, ms.map(m => m.to));
+        });
+        return dests;
+    }
+
+    function novoMestre() {
+        const mestres = ["Garry Kasparov", "Mikhail Tal", "Bobby Fischer", "Judit Polgár", "Magnus Carlsen"];
+        const mestre = mestres[Math.floor(Math.random() * mestres.length)];
+        document.getElementById('nome-mestre').innerText = mestre;
+        
+        chess.reset();
+        cg.set({ fen: chess.fen(), lastMove: null });
+    }
+</script>
+
+</body>
+</html>
