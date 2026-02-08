@@ -55,20 +55,23 @@
 </div>
 
 <script src="chess.min.js"></script>
-<script src="chessground.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chessground@9.1.1/bundle/chessground.js"></script>
 
 <script>
     window.onload = function() {
+        // Verifica se o Chess.js carregou do seu GitHub
+        if (typeof Chess === 'undefined') {
+            console.error("O ficheiro chess.min.js não foi encontrado no seu GitHub!");
+            return;
+        }
+
         const chess = new Chess();
         const boardNode = document.getElementById('chess-board');
         
+        // Inicializa o tabuleiro
         const cg = Chessground(boardNode, {
-            movable: { 
-                free: false, 
-                color: 'white', 
-                dests: getDests() 
-            },
-            drawable: { enabled: true }
+            movable: { free: false, color: 'white', dests: getDests() }
         });
 
         function getDests() {
@@ -85,17 +88,12 @@
         document.getElementById('btn-sorteio').onclick = function() {
             const mestreSorteado = mestres[Math.floor(Math.random() * mestres.length)];
             document.getElementById('nome-mestre').innerText = mestreSorteado.toUpperCase();
-            
-            // As fotos estão na raiz, então o caminho é direto
             document.getElementById('foto-mestre').src = mestreSorteado + ".jpg";
-            
             chess.reset();
             cg.set({ fen: chess.fen(), lastMove: null });
         };
-
-        // Redesenhar para garantir que as dimensões estão corretas
-        setTimeout(() => { cg.redrawAll(); }, 200);
     };
 </script>
 </body>
+
 </html>
