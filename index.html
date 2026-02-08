@@ -2,62 +2,23 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Hall of Masters - Professional</title>
-    <style>
-        body { background: #161512; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; }
-        
-        /* Tabuleiro com visual de madeira */
-        .board-wrapper { 
-            width: 480px; height: 480px; 
-            border: 12px solid #3d2d1e; 
-            box-shadow: 0 10px 50px rgba(0,0,0,0.8);
-            position: relative; 
-        }
-
-        #chess-board { width: 100%; height: 100%; position: relative; }
-
-        /* Cores Oficiais: a1 escura */
-        .square { position: absolute; width: 12.5%; height: 12.5%; }
-        .square.light { background-color: #f0d9b5; } /* Carvalho */
-        .square.dark { background-color: #b58863; }  /* Nogueira */
-        .square.selected { background-color: rgba(255, 255, 0, 0.5) !important; }
-
-        #painel { width: 280px; background: #262421; padding: 20px; border-radius: 12px; border: 1px solid #444; text-align: center; }
-        #foto-mestre { width: 200px; height: 200px; border-radius: 8px; border: 3px solid #c3a000; object-fit: cover; margin-bottom: 15px; }
-        .nome-mestre { color: #ffd700; font-size: 1.8em; font-weight: bold; margin-bottom: 20px; }
-        .btn { width: 100%; padding: 15px; background: #c3a000; color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 8px; font-size: 1.1em; }
-        
-        /* Peças do Lichess Alpha */
-        .piece { width: 100%; height: 100%; background-size: 95%; background-repeat: no-repeat; background-position: center; }
-        
-        .wP { background-image: url('https://lichess1.org/assets/piece/alpha/wP.svg'); }
-        .wN { background-image: url('https://lichess1.org/assets/piece/alpha/wN.svg'); }
-        .wB { background-image: url('https://lichess1.org/assets/piece/alpha/wB.svg'); }
-        .wR { background-image: url('https://lichess1.org/assets/piece/alpha/wR.svg'); }
-        .wQ { background-image: url('https://lichess1.org/assets/piece/alpha/wQ.svg'); }
-        .wK { background-image: url('https://lichess1.org/assets/piece/alpha/wK.svg'); }
-        
-        .bP { background-image: url('https://lichess1.org/assets/piece/alpha/bP.svg'); }
-        .bN { background-image: url('https://lichess1.org/assets/piece/alpha/bN.svg'); }
-        .bB { background-image: url('https://lichess1.org/assets/piece/alpha/bB.svg'); }
-        .bR { background-image: url('https://lichess1.org/assets/piece/alpha/bR.svg'); }
-        .bQ { background-image: url('https://lichess1.org/assets/piece/alpha/bQ.svg'); }
-        .bK { background-image: url('https://lichess1.org/assets/piece/alpha/bK.svg'); }
-    </style>
+    <title>Hall of Masters - Definitive Visual</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <script src="cerebro_mestres_leve.js"></script>
 </head>
-<body>
+<body style="background: #161512; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0;">
 
-<div class="container">
-    <div class="board-wrapper"><div id="chess-board"></div></div>
-    <div id="painel">
-        <img id="foto-mestre" src="" alt="Mestre">
-        <div class="nome-mestre" id="nome-mestre">...</div>
-        <button class="btn" id="btn-sorteio">Novo Desafio</button>
-        <div id="status" style="margin-top: 15px; font-style: italic; color: #aaa;">Carregando motor...</div>
+<div style="display: flex; gap: 40px; flex-wrap: wrap; justify-content: center;">
+    <div id="board-container" style="width: 480px; height: 480px; border: 12px solid #3d2d1e; box-shadow: 0 10px 50px rgba(0,0,0,0.7); position: relative;">
+        <div id="chess-board" style="width: 100%; height: 100%; position: relative;"></div>
+    </div>
+
+    <div id="painel" style="width: 280px; background: #262421; padding: 20px; border-radius: 12px; border: 1px solid #444; text-align: center;">
+        <img id="foto-mestre" src="" alt="Mestre" style="width: 200px; height: 200px; border-radius: 8px; border: 3px solid #c3a000; object-fit: cover; margin-bottom: 15px;">
+        <div id="nome-mestre" style="color: #ffd700; font-size: 1.8em; font-weight: bold; margin-bottom: 20px;">SORTEANDO...</div>
+        <button id="btn-sorteio" style="width: 100%; padding: 15px; background: #c3a000; color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 8px; font-size: 1.1em;">Novo Desafio</button>
+        <div id="status" style="margin-top: 15px; color: #aaa; font-style: italic;">Aguardando...</div>
     </div>
 </div>
 
@@ -68,12 +29,27 @@ let selectedSquare = null;
 let mestreActual = "";
 let stockfish = null;
 
-// Inicialização Stockfish (Contornando Cross-Origin do GitHub)
+// Configuração das Imagens das Peças (Alpha Theme)
+const pieceImages = {
+    'wP': 'https://lichess1.org/assets/piece/alpha/wP.svg',
+    'wN': 'https://lichess1.org/assets/piece/alpha/wN.svg',
+    'wB': 'https://lichess1.org/assets/piece/alpha/wB.svg',
+    'wR': 'https://lichess1.org/assets/piece/alpha/wR.svg',
+    'wQ': 'https://lichess1.org/assets/piece/alpha/wQ.svg',
+    'wK': 'https://lichess1.org/assets/piece/alpha/wK.svg',
+    'bP': 'https://lichess1.org/assets/piece/alpha/bP.svg',
+    'bN': 'https://lichess1.org/assets/piece/alpha/bN.svg',
+    'bB': 'https://lichess1.org/assets/piece/alpha/bB.svg',
+    'bR': 'https://lichess1.org/assets/piece/alpha/bR.svg',
+    'bQ': 'https://lichess1.org/assets/piece/alpha/bQ.svg',
+    'bK': 'https://lichess1.org/assets/piece/alpha/bK.svg'
+};
+
 try {
     const sfBlob = new Blob(["importScripts('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js');"], {type: "text/javascript"});
     stockfish = new Worker(URL.createObjectURL(sfBlob));
     stockfish.postMessage("uci");
-} catch(e) { console.error("Motor falhou", e); }
+} catch(e) { console.error(e); }
 
 function draw() {
     const boardEl = document.getElementById('chess-board');
@@ -82,26 +58,36 @@ function draw() {
 
     for(let r=0; r<8; r++) {
         for(let c=0; c<8; c++) {
-            // Se jogar de brancas, r=0 é o topo. Se de pretas, r=7 é o topo.
+            // Orientação do tabuleiro baseada na cor do jogador
             const vRow = (userColor === 'w') ? r : 7 - r;
             const vCol = (userColor === 'w') ? c : 7 - c;
 
             const sq = document.createElement('div');
-            // Lógica de cor fixa: (r+c) par sempre será clara.
-            // No array da chess.js, r=0, c=0 é a casa a8 (clara).
-            sq.className = `square ${(r + c) % 2 === 0 ? 'light' : 'dark'}`;
+            sq.style.position = 'absolute';
+            sq.style.width = '12.5%';
+            sq.style.height = '12.5%';
             sq.style.left = (vCol * 12.5) + '%';
             sq.style.top = (vRow * 12.5) + '%';
+            
+            // LÓGICA DE COR: a1 (r7, c0) deve ser ESCURA.
+            // (r + c) % 2 === 0 é CLARA (#f0d9b5), % 2 !== 0 é ESCURA (#b58863).
+            sq.style.backgroundColor = (r + c) % 2 === 0 ? '#f0d9b5' : '#b58863';
 
             const pos = String.fromCharCode(97 + c) + (8 - r);
-            if (selectedSquare === pos) sq.classList.add('selected');
+            if (selectedSquare === pos) sq.style.backgroundColor = "rgba(255, 255, 0, 0.6)";
 
             const piece = layout[r][c];
             if(piece) {
-                const pDiv = document.createElement('div');
-                pDiv.className = `piece ${piece.color}${piece.type.toUpperCase()}`;
-                sq.appendChild(pDiv);
+                const img = document.createElement('div');
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.backgroundImage = `url(${pieceImages[piece.color + piece.type.toUpperCase()]})`;
+                img.style.backgroundSize = 'contain';
+                img.style.backgroundRepeat = 'no-repeat';
+                img.style.backgroundPosition = 'center';
+                sq.appendChild(img);
             }
+
             sq.onclick = () => handleMove(pos);
             boardEl.appendChild(sq);
         }
