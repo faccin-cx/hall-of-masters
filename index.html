@@ -188,12 +188,10 @@ function novoJogo() {
     document.getElementById('status').innerText = `Estás de ${userColor === 'w' ? 'Brancas' : 'Pretas'}!`;
     draw();
 
+    // Se o utilizador cair de pretas, o mestre faz o primeiro lance livremente
     if (userColor === 'b') {
-        setTimeout(() => {
-            game.move("d4"); // Mestre força d4 para treinares a Tarrasch
-            draw();
-            document.getElementById('status').innerText = "Mestre jogou 1. d4. Prepara a Tarrasch!";
-        }, 1000);
+        document.getElementById('status').innerText = "O Mestre está a pensar no lance de abertura...";
+        setTimeout(mestrePlay, 1000); 
     }
 }
 
@@ -202,3 +200,4 @@ document.getElementById('btn-sorteio').onclick = novoJogo;
 </script>
 </body>
 </html>
+
