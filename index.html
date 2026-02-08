@@ -55,21 +55,19 @@
 </div>
 
 <script src="chess.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/chessground@9.1.1/bundle/chessground.js"></script>
+<script src="chessground.min.js"></script>
 
 <script>
-    window.onload = function() {
-        // Verifica se o Chess.js carregou do seu GitHub
-        if (typeof Chess === 'undefined') {
-            console.error("O ficheiro chess.min.js não foi encontrado no seu GitHub!");
+    function iniciarTabuleiro() {
+        if (typeof Chessground === 'undefined') {
+            // Se ainda não carregou, espera 100ms e tenta de novo
+            setTimeout(iniciarTabuleiro, 100);
             return;
         }
 
         const chess = new Chess();
         const boardNode = document.getElementById('chess-board');
         
-        // Inicializa o tabuleiro
         const cg = Chessground(boardNode, {
             movable: { free: false, color: 'white', dests: getDests() }
         });
@@ -83,6 +81,7 @@
             return dests;
         }
 
+        // Configuração do botão dos mestres
         const mestres = ["Anand", "Capablanca", "Carlsen", "Fischer", "Karpov", "Keres", "Lasker", "Marshall", "Polgar", "Rubinstein", "Tal"];
         
         document.getElementById('btn-sorteio').onclick = function() {
@@ -92,8 +91,13 @@
             chess.reset();
             cg.set({ fen: chess.fen(), lastMove: null });
         };
-    };
+        
+        console.log("Xadrez pronto!");
+    }
+
+    window.onload = iniciarTabuleiro;
 </script>
 </body>
 
 </html>
+
