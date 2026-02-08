@@ -3,64 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <title>Hall of Masters</title>
+    <script src="https://cdn.jsdelivr.net/npm/chess.js@0.10.3/chess.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chessground@9.0.1/dist/chessground.min.js"></script>
+    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessground@9.0.1/assets/chessground.base.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessground@9.0.1/assets/chessground.brown.css">
-    
+
     <style>
-        body { background: #161512; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { display: flex; gap: 40px; }
+        body { background: #161512; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; }
         
         .board-wrapper {
-            width: 500px; height: 500px;
-            border: 12px solid #3d2d1e;
+            width: 480px; height: 480px;
+            border: 10px solid #3d2d1e;
             background: #2b2b2b;
+            position: relative;
         }
 
         #painel {
-            width: 280px; background: #262421; padding: 25px; border-radius: 12px;
-            display: flex; flex-direction: column; align-items: center; border: 1px solid #3d3d3d;
+            width: 280px; background: #262421; padding: 20px; border-radius: 12px;
+            display: flex; flex-direction: column; align-items: center; border: 1px solid #444;
         }
 
         #foto-mestre {
             width: 200px; height: 200px; border-radius: 8px; border: 3px solid #c3a000;
-            margin-bottom: 20px; object-fit: cover; background: #312e2b;
+            margin-bottom: 20px; object-fit: cover; background: #333;
         }
 
-        .nome-mestre { color: #ffd700; font-size: 1.6em; font-weight: bold; margin-bottom: 30px; }
-        .btn { width: 100%; padding: 18px; background: #c3a000; border: none; font-weight: bold; cursor: pointer; border-radius: 6px; }
+        .nome-mestre { color: #ffd700; font-size: 1.8em; font-weight: bold; margin-bottom: 25px; text-align: center; }
         
-        /* Garante que o tabuleiro apareça */
+        .btn {
+            width: 100%; padding: 20px; background: #c3a000; color: #000;
+            border: none; font-weight: bold; cursor: pointer; border-radius: 8px;
+            font-size: 1.1em; text-transform: uppercase;
+        }
+        
         #chess-board { width: 100%; height: 100%; }
-        /* Peças padrão do Lichess para evitar links quebrados */
-        .cg-wrap { background-size: cover; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="board-wrapper">
-        <div id="chess-board"></div>
+        <div id="chess-board" class="cg-wrap brown"></div>
     </div>
 
     <div id="painel">
-        <img id="foto-mestre" src="fotos/Tal.jpg" alt="Mestre">
-        <div class="nome-mestre" id="nome-mestre">TAL</div>
-        <button class="btn" id="btn-desafio">DESAFIAR MESTRE</button>
+        <img id="foto-mestre" src="fotos/Tal.jpg" onerror="this.src='https://via.placeholder.com/200?text=Carregando...'" alt="Mestre">
+        <div class="nome-mestre" id="nome-mestre">MIKHAIL TAL</div>
+        <button class="btn" id="botao-sorteio">Desafiar Mestre</button>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chess.js@0.10.3/chess.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chessground@9.0.1/dist/chessground.min.js"></script>
-
 <script>
+    // 1. Inicializa o motor de xadrez
     const chess = new Chess();
     const boardNode = document.getElementById('chess-board');
     
-    // Inicialização do Tabuleiro
-    let cg = Chessground(boardNode, {
-        movable: { free: false, color: 'white', dests: getDests() },
-        orientation: 'white'
-    });
+    // 2. Tenta carregar o tabuleiro (com erro amigável)
+    let cg;
+    try {
+        cg = Chessground(boardNode, {
+            movable: { free: false, color: 'white', dests: getDests() }
+        });
+    } catch (e) {
+        console.error("Erro ao carregar tabuleiro:", e);
+        boardNode.innerHTML = "<p style='padding:20px'>Erro ao carregar o tabuleiro. Verifique a conexão.</p>";
+    }
 
     function getDests() {
         const dests = new Map();
@@ -71,18 +80,22 @@
         return dests;
     }
 
-    // LISTA DE MESTRES (Sincronizada com suas fotos)
+    // 3. Lógica do Botão (Versão Blindada)
     const mestres = ["Anand", "Capablanca", "Carlsen", "Fischer", "Karpov", "Keres", "Lasker", "Marshall", "Polgar", "Rubinstein", "Tal"];
-
-    document.getElementById('btn-desafio').onclick = function() {
-        const mestre = mestres[Math.floor(Math.random() * mestres.length)];
-        document.getElementById('nome-mestre').innerText = mestre;
-        document.getElementById('foto-mestre').src = "fotos/" + mestre + ".jpg";
+    
+    document.getElementById('botao-sorteio').addEventListener('click', function() {
+        const mestreSorteado = mestres[Math.floor(Math.random() * mestres.length)];
         
+        // Atualiza Texto e Foto
+        document.getElementById('nome-mestre').innerText = mestreSorteado.toUpperCase();
+        document.getElementById('foto-mestre').src = "fotos/" + mestreSorteado + ".jpg";
+        
+        // Reinicia o jogo
         chess.reset();
-        cg.set({ fen: chess.fen(), lastMove: null });
-        console.log("Novo mestre desafiado: " + mestre);
-    };
+        if (cg) cg.set({ fen: chess.fen(), lastMove: null });
+        
+        console.log("Desafio aceito por: " + mestreSorteado);
+    });
 </script>
 </body>
 </html>
