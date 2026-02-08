@@ -2,16 +2,17 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hall of Masters</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessground@9.0.1/assets/chessground.base.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessground@9.0.1/assets/chessground.brown.css">
-    <link rel="stylesheet" href="https://lichess1.org/assets/_899m5u/piece-css/alpha.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessground/9.0.1/chessground.base.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessground/9.0.1/chessground.brown.min.css">
     
     <style>
-        body { background: #161512; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { display: flex; gap: 40px; align-items: flex-start; }
+        body { background: #161512; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; }
         
-        /* O segredo: o tabuleiro PRECISA de tamanho fixo para aparecer */
+        /* Moldura do tabuleiro */
         .board-wrapper {
             width: 500px; height: 500px;
             border: 12px solid #3d2d1e;
@@ -20,19 +21,28 @@
         }
 
         #painel {
-            width: 280px; background: #262421; padding: 25px; border-radius: 12px;
+            width: 300px; background: #262421; padding: 25px; border-radius: 12px;
             display: flex; flex-direction: column; align-items: center; border: 1px solid #3d3d3d;
         }
 
         #foto-mestre {
-            width: 200px; height: 200px; border-radius: 8px; border: 3px solid #c3a000;
+            width: 220px; height: 220px; border-radius: 8px; border: 3px solid #c3a000;
             margin-bottom: 20px; object-fit: cover; background: #312e2b;
         }
 
-        .nome-mestre { color: #ffd700; font-size: 1.6em; font-weight: bold; margin-bottom: 30px; text-align: center; }
-        .btn { width: 100%; padding: 18px; background: #c3a000; color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 6px; font-size: 1.1em; }
+        .nome-mestre { color: #ffd700; font-size: 1.8em; font-weight: bold; margin-bottom: 30px; text-align: center; }
         
-        .cg-wrap { width: 500px; height: 500px; } /* Força o tamanho do tabuleiro */
+        .btn {
+            width: 100%; padding: 18px; background: #c3a000; color: #000;
+            border: none; font-weight: bold; cursor: pointer; border-radius: 6px;
+            font-size: 1.1em; transition: 0.3s;
+        }
+        .btn:hover { background: #ffd700; transform: scale(1.03); }
+        
+        /* Peças Alpha embutidas via CSS do Lichess */
+        .cg-wrap.alpha .peça.pawn.white { background-image: url('https://lichess1.org/assets/_899m5u/piece/alpha/wP.svg'); }
+        /* O Chessground precisa de altura e largura explícitas no elemento interno */
+        #chess-board { width: 100%; height: 100%; }
     </style>
 </head>
 <body>
@@ -50,28 +60,31 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chessground@9.0.1/dist/chessground.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chessground/9.0.1/chessground.min.js"></script>
 
 <script>
-    // Se o Chessground não carregar, ele vai avisar no console
-    if (typeof Chessground === 'undefined') {
-        console.error("Erro: A biblioteca do tabuleiro não carregou!");
-    }
-
     const chess = new Chess();
     const boardNode = document.getElementById('chess-board');
     const fotoEl = document.getElementById('foto-mestre');
     const nomeEl = document.getElementById('nome-mestre');
 
-    let cg = Chessground(boardNode, {
-        movable: { free: false, color: 'white', dests: getDests() },
+    // Configuração do tabuleiro
+    let config = {
+        movable: {
+            free: false,
+            color: 'white',
+            dests: getDests()
+        },
         events: {
             after: (orig, dest) => {
                 chess.move({ from: orig, to: dest, promotion: 'q' });
                 cg.set({ dests: getDests() });
+                // Aqui entrará o Stockfish em breve
             }
         }
-    });
+    };
+
+    let cg = Chessground(boardNode, config);
 
     function getDests() {
         const dests = new Map();
@@ -82,15 +95,22 @@
         return dests;
     }
 
+    const mestres = ["Anand", "Capablanca", "Carlsen", "Fischer", "Karpov", "Keres", "Lasker", "Marshall", "Polgar", "Rubinstein", "Tal"];
+
     function novoMestre() {
-        const mestres = ["Anand", "Capablanca", "Carlsen", "Fischer", "Karpov", "Keres", "Lasker", "Marshall", "Polgar", "Rubinstein", "Tal"];
         const mestre = mestres[Math.floor(Math.random() * mestres.length)];
         nomeEl.innerText = mestre;
-        fotoEl.src = "fotos/" + mestre + ".jpg"; // Caminho que já testamos e deu certo!
+        // Caminho corrigido para bater com suas pastas no GitHub
+        fotoEl.src = "fotos/" + mestre + ".jpg";
         
         chess.reset();
         cg.set({ fen: chess.fen(), lastMove: null });
     }
+    
+    // Forçar o redesenho do tabuleiro após carregar
+    window.addEventListener('load', () => {
+        cg.redrawAll();
+    });
 </script>
 </body>
 </html>
