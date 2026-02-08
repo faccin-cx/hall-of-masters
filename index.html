@@ -3,45 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <title>Hall of Masters</title>
-    <link rel="stylesheet" href="https://unpkg.com/chessground/assets/chessground.base.css">
-    <link rel="stylesheet" href="https://unpkg.com/chessground/assets/chessground.brown.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessground@9.0.1/assets/chessground.base.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessground@9.0.1/assets/chessground.brown.css">
     <link rel="stylesheet" href="https://lichess1.org/assets/_899m5u/piece-css/alpha.css">
     
     <style>
         body { background: #161512; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .container { display: flex; gap: 40px; align-items: flex-start; }
         
-        /* Define tamanho fixo para o tabuleiro aparecer */
+        /* O segredo: o tabuleiro PRECISA de tamanho fixo para aparecer */
         .board-wrapper {
-            width: 550px; height: 550px;
+            width: 500px; height: 500px;
             border: 12px solid #3d2d1e;
             box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-            position: relative;
+            background: #2b2b2b;
         }
 
         #painel {
-            width: 300px; background: #262421; padding: 25px; border-radius: 12px;
+            width: 280px; background: #262421; padding: 25px; border-radius: 12px;
             display: flex; flex-direction: column; align-items: center; border: 1px solid #3d3d3d;
         }
 
         #foto-mestre {
-            width: 200px; height: 200px;
-            border-radius: 8px; border: 3px solid #c3a000;
-            margin-bottom: 20px; object-fit: cover; 
-            background: #312e2b;
+            width: 200px; height: 200px; border-radius: 8px; border: 3px solid #c3a000;
+            margin-bottom: 20px; object-fit: cover; background: #312e2b;
         }
 
-        .nome-mestre { color: #ffd700; font-size: 1.6em; font-weight: bold; margin-bottom: 30px; text-align: center; min-height: 40px; }
+        .nome-mestre { color: #ffd700; font-size: 1.6em; font-weight: bold; margin-bottom: 30px; text-align: center; }
+        .btn { width: 100%; padding: 18px; background: #c3a000; color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 6px; font-size: 1.1em; }
         
-        .btn {
-            width: 100%; padding: 18px; background: #c3a000; color: #000;
-            border: none; font-weight: bold; cursor: pointer; border-radius: 6px;
-            font-size: 1.1em; transition: 0.3s;
-        }
-        .btn:hover { background: #ffd700; transform: scale(1.03); }
-        
-        /* Garante que o Chessground ocupa o container */
-        .cg-wrap { width: 100% !important; height: 100% !important; display: block; }
+        .cg-wrap { width: 500px; height: 500px; } /* Força o tamanho do tabuleiro */
     </style>
 </head>
 <body>
@@ -52,37 +43,27 @@
     </div>
 
     <div id="painel">
-        <img id="foto-mestre" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Chess_Set.jpg/250px-Chess_Set.jpg" alt="Mestre">
+        <img id="foto-mestre" src="fotos/Tal.jpg" alt="Mestre">
         <div class="nome-mestre" id="nome-mestre">HALL OF MASTERS</div>
         <button class="btn" onclick="novoMestre()">DESAFIAR MESTRE</button>
     </div>
 </div>
 
-<script src="https://unpkg.com/chessground"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chessground@9.0.1/dist/chessground.min.js"></script>
 
 <script>
+    // Se o Chessground não carregar, ele vai avisar no console
+    if (typeof Chessground === 'undefined') {
+        console.error("Erro: A biblioteca do tabuleiro não carregou!");
+    }
+
     const chess = new Chess();
     const boardNode = document.getElementById('chess-board');
     const fotoEl = document.getElementById('foto-mestre');
     const nomeEl = document.getElementById('nome-mestre');
 
-    // Lista de mestres com fotos reais da Wikipedia
-    const mestresData = {
-        "Anand": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Viswanathan_Anand_01.jpg/220px-Viswanathan_Anand_01.jpg",
-        "Capablanca": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Jose_Raul_Capablanca_1931.jpg/220px-Jose_Raul_Capablanca_1931.jpg",
-        "Carlsen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Magnus_Carlsen_2024.jpg/220px-Magnus_Carlsen_2024.jpg",
-        "Fischer": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Bobby_Fischer_1960.jpg/220px-Bobby_Fischer_1960.jpg",
-        "Karpov": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Anatoly_Karpov_2014.jpg/220px-Anatoly_Karpov_2014.jpg",
-        "Keres": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Paul_Keres_1961.jpg/220px-Paul_Keres_1961.jpg",
-        "Lasker": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Emanuel_Lasker_1933.jpg/220px-Emanuel_Lasker_1933.jpg",
-        "Marshall": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Frank_Marshall_1912.jpg/220px-Frank_Marshall_1912.jpg",
-        "Polgar": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Judit_Polgar_2012.jpg/220px-Judit_Polgar_2012.jpg",
-        "Rubinstein": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Akiba_Rubinstein.jpg/220px-Akiba_Rubinstein.jpg",
-        "Tal": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Mikhail_Tal_1982.jpg/220px-Mikhail_Tal_1982.jpg"
-    };
-
-    const cg = Chessground(boardNode, {
+    let cg = Chessground(boardNode, {
         movable: { free: false, color: 'white', dests: getDests() },
         events: {
             after: (orig, dest) => {
@@ -102,10 +83,10 @@
     }
 
     function novoMestre() {
-        const nomes = Object.keys(mestresData);
-        const mestre = nomes[Math.floor(Math.random() * nomes.length)];
+        const mestres = ["Anand", "Capablanca", "Carlsen", "Fischer", "Karpov", "Keres", "Lasker", "Marshall", "Polgar", "Rubinstein", "Tal"];
+        const mestre = mestres[Math.floor(Math.random() * mestres.length)];
         nomeEl.innerText = mestre;
-        fotoEl.src = mestresData[mestre];
+        fotoEl.src = "fotos/" + mestre + ".jpg"; // Caminho que já testamos e deu certo!
         
         chess.reset();
         cg.set({ fen: chess.fen(), lastMove: null });
