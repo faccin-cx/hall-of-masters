@@ -8,13 +8,12 @@
         .container { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; }
         .board-wrapper { width: 480px; height: 480px; border: 10px solid #3d2d1e; background: #2b2b2b; position: relative; user-select: none; }
         #painel { width: 280px; background: #262421; padding: 20px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; border: 1px solid #444; }
-        #foto-mestre { width: 200px; height: 200px; border-radius: 8px; border: 3px solid #c3a000; margin-bottom: 20px; object-fit: cover; }
-        .nome-mestre { color: #ffd700; font-size: 1.8em; font-weight: bold; margin-bottom: 25px; text-align: center; }
+        #foto-mestre { width: 200px; height: 200px; border-radius: 8px; border: 3px solid #c3a000; margin-bottom: 20px; object-fit: cover; background: #333; }
+        .nome-mestre { color: #ffd700; font-size: 1.8em; font-weight: bold; margin-bottom: 25px; text-align: center; height: 1.2em; }
         .btn { width: 100%; padding: 20px; background: #c3a000; color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 8px; font-size: 1.1em; margin-bottom: 10px; }
         .btn:hover { background: #e6bc00; }
         #chess-board { width: 100%; height: 100%; position: relative; }
         
-        /* Peças */
         .piece { width: 100%; height: 100%; background-size: cover; cursor: pointer; }
         .piece.wP { background-image: url('https://lichess1.org/assets/piece/alpha/wP.svg'); }
         .piece.wN { background-image: url('https://lichess1.org/assets/piece/alpha/wN.svg'); }
@@ -29,6 +28,7 @@
         .piece.bQ { background-image: url('https://lichess1.org/assets/piece/alpha/bQ.svg'); }
         .piece.bK { background-image: url('https://lichess1.org/assets/piece/alpha/bK.svg'); }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <script src="cerebro_mestres_leve.js"></script>
 </head>
@@ -39,8 +39,8 @@
         <div id="chess-board"></div>
     </div>
     <div id="painel">
-        <img id="foto-mestre" src="Tal.jpg" alt="Mestre">
-        <div class="nome-mestre" id="nome-mestre">MIKHAIL TAL</div>
+        <img id="foto-mestre" src="" alt="Mestre">
+        <div class="nome-mestre" id="nome-mestre">CARREGANDO...</div>
         <button class="btn" id="btn-sorteio">Desafiar Mestre</button>
         <div id="status" style="margin-top: 10px; color: #aaa; font-size: 0.9em; text-align: center;">Aguardando...</div>
     </div>
@@ -50,12 +50,22 @@
 let game;
 let boardElement;
 let userColor = 'w';
-let mestreActual = "TAL";
+let mestreActual = "Tal";
 let selectedSquare = null;
+let stockfish = null;
 
-const stockfish = new Worker("https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js");
-stockfish.postMessage("uci");
-stockfish.postMessage("setoption name Skill Level value 12");
+// Inicialização segura do Stockfish
+try {
+    // Tentativa de criar o Worker usando um Blob para contornar restrições de segurança do GitHub Pages
+    const sfCode = "importScripts('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js');";
+    const blob = new Blob([sfCode], {type: "text/javascript"});
+    stockfish = new Worker(URL.createObjectURL(blob));
+    
+    stockfish.postMessage("uci");
+    stockfish.postMessage("setoption name Skill Level value 12");
+} catch (e) {
+    console.error("Erro ao carregar Stockfish:", e);
+}
 
 window.onload = function() {
     boardElement = document.getElementById('chess-board');
@@ -65,12 +75,12 @@ window.onload = function() {
 };
 
 function draw() {
+    if (!boardElement) return;
     boardElement.innerHTML = '';
     const layout = game.board();
 
     for(let r=0; r<8; r++) {
         for(let c=0; c<8; c++) {
-            // Se for pretas, invertemos o índice da linha e coluna para a visualização
             const visualRow = (userColor === 'b') ? 7 - r : r;
             const visualCol = (userColor === 'b') ? 7 - c : c;
 
@@ -86,10 +96,9 @@ function draw() {
 
             if (selectedSquare === pos) sq.style.backgroundColor = "#ffeb3b";
 
-            const p = layout[r][c]; // Pegamos a peça na posição real da matriz do chess.js
+            const p = layout[r][c];
             if(p) {
                 const piece = document.createElement('div');
-                // Exemplo de classe: piece wP (White Pawn) ou bK (Black King)
                 piece.className = `piece ${p.color}${p.type.toUpperCase()}`;
                 sq.appendChild(piece);
             }
@@ -102,6 +111,7 @@ function draw() {
 function novoJogo() {
     const mestres = ["Anand", "Capablanca", "Carlsen", "Fischer", "Karpov", "Keres", "Lasker", "Marshall", "Polgar", "Rubinstein", "Tal"];
     mestreActual = mestres[Math.floor(Math.random() * mestres.length)];
+    
     document.getElementById('nome-mestre').innerText = mestreActual.toUpperCase();
     document.getElementById('foto-mestre').src = mestreActual + ".jpg";
     
@@ -136,10 +146,9 @@ function handleSquareClick(pos) {
             draw();
             if (!game.game_over()) {
                 document.getElementById('status').innerText = mestreActual + " pensando...";
-                setTimeout(jogadaDoMestre, 250);
+                setTimeout(jogadaDoMestre, 400);
             }
         } else {
-            // Se clicar numa peça da mesma cor, troca a seleção
             if (piece && piece.color === userColor) {
                 selectedSquare = pos;
             }
@@ -162,16 +171,18 @@ function jogadaDoMestre() {
         }
     }
 
-    stockfish.postMessage("position fen " + game.fen());
-    stockfish.postMessage("go movetime 800"); 
+    if (stockfish) {
+        stockfish.postMessage("position fen " + game.fen());
+        stockfish.postMessage("go movetime 800"); 
 
-    stockfish.onmessage = function(event) {
-        if (event.data.includes("bestmove")) {
-            const moveUCI = event.data.split(" ")[1];
-            game.move(moveUCI, { sloppy: true });
-            finalizarJogadaMestre();
-        }
-    };
+        stockfish.onmessage = function(event) {
+            if (event.data.includes("bestmove")) {
+                const moveUCI = event.data.split(" ")[1];
+                game.move(moveUCI, { sloppy: true });
+                finalizarJogadaMestre();
+            }
+        };
+    }
 }
 
 function finalizarJogadaMestre() {
