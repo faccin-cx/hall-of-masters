@@ -21,30 +21,30 @@
         piece { position: absolute; width: 12.5%; height: 12.5%; background-size: cover; z-index: 2; pointer-events: none; }
         square { position: absolute; width: 12.5%; height: 12.5%; z-index: 1; }
         
-        /* Cores do Tabuleiro */
+        /* Cores do Tabuleiro (Blue) */
         .blue .square.light { background-color: #dee3e6; }
         .blue .square.dark { background-color: #8ca2ad; }
 
         /* Peças do Lichess */
-        .pawn.white { background-image: url('https://lichess1.org/assets/piece/alpha/wP.svg'); }
-        .knight.white { background-image: url('https://lichess1.org/assets/piece/alpha/wN.svg'); }
-        .bishop.white { background-image: url('https://lichess1.org/assets/piece/alpha/wB.svg'); }
-        .rook.white { background-image: url('https://lichess1.org/assets/piece/alpha/wR.svg'); }
-        .queen.white { background-image: url('https://lichess1.org/assets/piece/alpha/wQ.svg'); }
-        .king.white { background-image: url('https://lichess1.org/assets/piece/alpha/wK.svg'); }
-        .pawn.black { background-image: url('https://lichess1.org/assets/piece/alpha/bP.svg'); }
-        .knight.black { background-image: url('https://lichess1.org/assets/piece/alpha/bN.svg'); }
-        .bishop.black { background-image: url('https://lichess1.org/assets/piece/alpha/bB.svg'); }
-        .rook.black { background-image: url('https://lichess1.org/assets/piece/alpha/bR.svg'); }
-        .queen.black { background-image: url('https://lichess1.org/assets/piece/alpha/bQ.svg'); }
-        .king.black { background-image: url('https://lichess1.org/assets/piece/alpha/bK.svg'); }
+        .piece.pawn.white { background-image: url('https://lichess1.org/assets/piece/alpha/wP.svg'); }
+        .piece.knight.white { background-image: url('https://lichess1.org/assets/piece/alpha/wN.svg'); }
+        .piece.bishop.white { background-image: url('https://lichess1.org/assets/piece/alpha/wB.svg'); }
+        .piece.rook.white { background-image: url('https://lichess1.org/assets/piece/alpha/wR.svg'); }
+        .piece.queen.white { background-image: url('https://lichess1.org/assets/piece/alpha/wQ.svg'); }
+        .piece.king.white { background-image: url('https://lichess1.org/assets/piece/alpha/wK.svg'); }
+        .piece.pawn.black { background-image: url('https://lichess1.org/assets/piece/alpha/bP.svg'); }
+        .piece.knight.black { background-image: url('https://lichess1.org/assets/piece/alpha/bN.svg'); }
+        .piece.bishop.black { background-image: url('https://lichess1.org/assets/piece/alpha/bB.svg'); }
+        .piece.rook.black { background-image: url('https://lichess1.org/assets/piece/alpha/bR.svg'); }
+        .piece.queen.black { background-image: url('https://lichess1.org/assets/piece/alpha/bQ.svg'); }
+        .piece.king.black { background-image: url('https://lichess1.org/assets/piece/alpha/bK.svg'); }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="board-wrapper">
-        <div id="chess-board"></div>
+        <div id="chess-board" class="blue"></div>
     </div>
 
     <div id="painel">
@@ -54,42 +54,48 @@
     </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chessground@7.11.6/chessground.min.js"></script>
+<script src="chess.js"></script>
+<script src="chessground.js"></script>
 
 <script>
-    // Agora o Chessground deve estar definido
-    const chess = new Chess();
-    const boardNode = document.getElementById('chess-board');
-    
-    // Inicialização
-    const cg = Chessground(boardNode, {
-        movable: { free: false, color: 'white', dests: getDests() },
-        viewOnly: false
-    });
-
-    function getDests() {
-        const dests = new Map();
-        chess.SQUARES.forEach(s => {
-            const ms = chess.moves({ square: s, verbose: true });
-            if (ms.length) dests.set(s, ms.map(m => m.to));
-        });
-        return dests;
-    }
-
-    const mestres = ["Anand", "Capablanca", "Carlsen", "Fischer", "Karpov", "Keres", "Lasker", "Marshall", "Polgar", "Rubinstein", "Tal"];
-    
-    document.getElementById('btn-sorteio').onclick = function() {
-        const mestreSorteado = mestres[Math.floor(Math.random() * mestres.length)];
-        document.getElementById('nome-mestre').innerText = mestreSorteado.toUpperCase();
-        document.getElementById('foto-mestre').src = mestreSorteado + ".jpg";
+    window.onload = function() {
+        const chess = new Chess();
+        const boardNode = document.getElementById('chess-board');
         
-        chess.reset();
-        cg.set({ fen: chess.fen(), lastMove: null });
-    };
+        const cg = Chessground(boardNode, {
+            movable: { 
+                free: false, 
+                color: 'white', 
+                dests: getDests() 
+            },
+            drawable: { enabled: true }
+        });
 
-    // Forçar desenho após carregar
-    setTimeout(() => { cg.redrawAll(); }, 500);
+        function getDests() {
+            const dests = new Map();
+            chess.SQUARES.forEach(s => {
+                const ms = chess.moves({ square: s, verbose: true });
+                if (ms.length) dests.set(s, ms.map(m => m.to));
+            });
+            return dests;
+        }
+
+        const mestres = ["Anand", "Capablanca", "Carlsen", "Fischer", "Karpov", "Keres", "Lasker", "Marshall", "Polgar", "Rubinstein", "Tal"];
+        
+        document.getElementById('btn-sorteio').onclick = function() {
+            const mestreSorteado = mestres[Math.floor(Math.random() * mestres.length)];
+            document.getElementById('nome-mestre').innerText = mestreSorteado.toUpperCase();
+            
+            // As fotos estão na raiz, então o caminho é direto
+            document.getElementById('foto-mestre').src = mestreSorteado + ".jpg";
+            
+            chess.reset();
+            cg.set({ fen: chess.fen(), lastMove: null });
+        };
+
+        // Redesenhar para garantir que as dimensões estão corretas
+        setTimeout(() => { cg.redrawAll(); }, 200);
+    };
 </script>
 </body>
 </html>
