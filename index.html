@@ -2,13 +2,18 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="color-scheme" content="light only">
-    <title>Hall of Masters - Professional Wood</title>
+    <meta name="color-scheme" content="light">
+    <title>Hall of Masters - Wood Edition</title>
     <style>
-        :root { color-scheme: light; }
+        /* Bloqueio drástico contra extensões de Dark Mode */
+        html, body, div, img {
+            filter: none !important;
+            color-scheme: light !important;
+        }
+        
         body { 
-            background: #161512; 
-            color: #fff; 
+            background: #161512 !important; 
+            color: #fff !important; 
             font-family: sans-serif; 
             display: flex; 
             justify-content: center; 
@@ -16,14 +21,46 @@
             min-height: 100vh; 
             margin: 0; 
         }
-        /* Efeito de madeira usando gradientes radiais para simular veios */
+
+        /* Casas com texturas de madeira real (Imagens) */
         .wood-light {
-            background: #f0d9b5;
-            background-image: radial-gradient(circle at 50% 50%, #f4e2c6 0%, #f0d9b5 100%);
+            background-image: url('https://images.chesscomfiles.com/chess-themes/boards/wood/light.png') !important;
+            background-size: cover !important;
         }
         .wood-dark {
-            background: #b58863;
-            background-image: radial-gradient(circle at 50% 50%, #bd926d 0%, #b58863 100%);
+            background-image: url('https://images.chesscomfiles.com/chess-themes/boards/wood/dark.png') !important;
+            background-size: cover !important;
+        }
+
+        #chess-board {
+            width: 480px;
+            height: 480px;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+        }
+
+        .square {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .piece {
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            z-index: 2;
+        }
+        
+        .selected {
+            box-shadow: inset 0 0 0 5px rgba(255, 255, 0, 0.5) !important;
+            background-color: rgba(255, 255, 0, 0.2) !important;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js"></script>
@@ -33,12 +70,12 @@
 <body>
 
 <div style="display: flex; gap: 40px; flex-wrap: wrap; justify-content: center;">
-    <div id="board-container" style="width: 480px; height: 480px; border: 12px solid #3d2d1e; box-shadow: 0 10px 50px rgba(0,0,0,0.8); position: relative;">
-        <div id="chess-board" style="width: 100%; height: 100%; position: relative;"></div>
+    <div id="board-container" style="border: 15px solid #3d2d1e; box-shadow: 0 20px 60px rgba(0,0,0,0.8); border-radius: 4px;">
+        <div id="chess-board"></div>
     </div>
 
-    <div id="painel" style="width: 280px; background: #262421; padding: 20px; border-radius: 12px; border: 1px solid #444; text-align: center;">
-        <img id="foto-mestre" src="" alt="Mestre" style="width: 200px; height: 200px; border-radius: 8px; border: 3px solid #c3a000; object-fit: cover; margin-bottom: 15px;">
+    <div id="painel" style="width: 280px; background: #262421; padding: 25px; border-radius: 12px; border: 1px solid #444; text-align: center;">
+        <img id="foto-mestre" src="" alt="Mestre" style="width: 200px; height: 200px; border-radius: 8px; border: 3px solid #c3a000; object-fit: cover; margin-bottom: 15px; background: #333;">
         <div id="nome-mestre" style="color: #ffd700; font-size: 1.8em; font-weight: bold; margin-bottom: 20px;">SORTEANDO...</div>
         <button id="btn-sorteio" style="width: 100%; padding: 15px; background: #c3a000; color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 8px; font-size: 1.1em;">Novo Desafio</button>
         <div id="status" style="margin-top: 15px; color: #aaa; font-style: italic;">Aguardando...</div>
@@ -77,28 +114,17 @@ function draw() {
             const vCol = (userColor === 'w') ? c : 7 - c;
 
             const sq = document.createElement('div');
-            sq.style.position = 'absolute';
-            sq.style.width = '12.5%';
-            sq.style.height = '12.5%';
-            sq.style.left = (vCol * 12.5) + '%';
-            sq.style.top = (vRow * 12.5) + '%';
+            sq.className = 'square ' + ((r + c) % 2 === 0 ? 'wood-light' : 'wood-dark');
             
-            // Aplicando as classes de madeira com gradiente
-            sq.className = (r + c) % 2 === 0 ? 'wood-light' : 'wood-dark';
-
             const pos = String.fromCharCode(97 + c) + (8 - r);
-            if (selectedSquare === pos) sq.style.boxShadow = "inset 0 0 15px 5px rgba(255, 255, 0, 0.5)";
+            if (selectedSquare === pos) sq.classList.add('selected');
 
             const piece = layout[r][c];
             if(piece) {
-                const img = document.createElement('div');
-                img.style.width = '100%';
-                img.style.height = '100%';
-                img.style.backgroundImage = `url(${pieceImages[piece.color + piece.type.toUpperCase()]})`;
-                img.style.backgroundSize = '85%';
-                img.style.backgroundRepeat = 'no-repeat';
-                img.style.backgroundPosition = 'center';
-                sq.appendChild(img);
+                const pDiv = document.createElement('div');
+                pDiv.className = 'piece';
+                pDiv.style.backgroundImage = `url(${pieceImages[piece.color + piece.type.toUpperCase()]})`;
+                sq.appendChild(pDiv);
             }
 
             sq.onclick = () => handleMove(pos);
@@ -118,7 +144,7 @@ function handleMove(pos) {
         selectedSquare = null;
         if (move) {
             draw();
-            document.getElementById('status').innerText = "O Mestre está a pensar...";
+            document.getElementById('status').innerText = "Mestre a pensar...";
             setTimeout(mestrePlay, 600);
         } else {
             if (p && p.color === userColor) selectedSquare = pos;
@@ -152,12 +178,11 @@ function novoJogo() {
     document.getElementById('status').innerText = `Estás de ${userColor === 'w' ? 'Brancas' : 'Pretas'}`;
     draw();
     
-    // Se o mestre estiver de brancas, ele joga 1. d4 como abertura padrão para o teu treino
     if (userColor === 'b') {
         setTimeout(() => {
             game.move("d4");
             draw();
-            document.getElementById('status').innerText = "O Mestre jogou 1. d4. Tua vez!";
+            document.getElementById('status').innerText = "O Mestre abriu com 1. d4!";
         }, 1000);
     }
 }
