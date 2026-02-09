@@ -279,22 +279,51 @@ function handleMove(pos) {
     }
 }
 
+
 function finalizeMove() {
     playPlim();
     draw();
     if (checkGameOver()) return;
     
     document.getElementById('status').innerText = "Mestre a pensar...";
-    setTimeout(mestrePlay, 600);
+    
+    // Calcula o delay com base na fase do jogo
+    const delay = getMestreDelay();
+    setTimeout(mestrePlay, delay);
+}
+
+function getMestreDelay() {
+    const lancesTotais = game.history().length;
+    let min, max;
+
+    if (lancesTotais <= 20) { 
+        // Abertura: até o lance 10 de cada (20 movimentos totais)
+        min = 1000; max = 2000;
+    } else if (lancesTotais <= 60) {
+        // Meio-jogo: até o lance 30 de cada (60 movimentos totais)
+        min = 3000; max = 6000;
+    } else {
+        // Final: após o lance 30
+        min = 2000; max = 4000;
+    }
+
+    return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 function mestrePlay() {
     if (isGameOver) return;
+    
+    // Mantemos o movetime do engine em 1000ms para garantir qualidade no lance
     stockfish.postMessage("position fen " + game.fen());
     stockfish.postMessage("go movetime 1000");
+    
     stockfish.onmessage = (e) => {
         if (e.data.includes("bestmove")) {
-            game.move(e.data.split(" ")[1], { sloppy: true });
+            const move = e.data.split(" ")[1];
+            
+            // Pequeno truque: se o engine respondeu MUITO rápido (antes do delay visual), 
+            // a gente garante que o movimento só apareça após o processamento.
+            game.move(move, { sloppy: true });
             playPlim();
             draw();
             if (!checkGameOver()) {
@@ -346,3 +375,4 @@ document.getElementById('btn-sorteio').onclick = novoJogo;
 </script>
 </body>
 </html>
+
