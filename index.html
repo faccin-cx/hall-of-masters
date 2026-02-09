@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Hall of Masters - PGN & History</title>
+    <title>Hall of Masters - Resign Feature</title>
     <style>
         body { 
             background: #161512; 
@@ -55,7 +55,6 @@
 
         .selected { box-shadow: inset 0 0 15px 5px rgba(255, 255, 0, 0.6) !important; }
 
-        /* Estilos do Histórico e PGN */
         #move-history {
             width: 100%;
             height: 120px;
@@ -71,9 +70,10 @@
             flex-wrap: wrap;
             gap: 8px;
             align-content: flex-start;
+            box-sizing: border-box;
         }
         .move-num { color: #666; font-weight: bold; }
-        .move-text { color: #ffd700; cursor: pointer; }
+        .move-text { color: #ffd700; }
 
         #keyboard-input {
             width: 100%;
@@ -89,6 +89,7 @@
             box-sizing: border-box;
         }
         #keyboard-input:focus { border-color: #c3a000; box-shadow: 0 0 5px #c3a000; }
+        #keyboard-input:disabled { background: #1a1a1a; color: #555; cursor: not-allowed; }
 
         .btn-secundario {
             width: 100%;
@@ -103,6 +104,11 @@
             transition: background 0.2s;
         }
         .btn-secundario:hover { background: #555; }
+
+        .btn-resign {
+            background: #5c2121;
+        }
+        .btn-resign:hover { background: #822e2e; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
@@ -123,7 +129,10 @@
         
         <div id="move-history"></div>
         
-        <button class="btn-secundario" onclick="copyPGN()">Copiar PGN</button>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-secundario" onclick="copyPGN()">Copiar PGN</button>
+            <button id="btn-resign" class="btn-secundario btn-resign" onclick="resign()">Desistir</button>
+        </div>
         
         <div id="status" style="margin-top: 15px; color: #aaa; font-style: italic;">Aguardando...</div>
     </div>
@@ -134,6 +143,7 @@ let game = new Chess();
 let userColor = 'w';
 let selectedSquare = null;
 let stockfish = null;
+let isGameOver = false;
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -189,6 +199,38 @@ function copyPGN() {
     setTimeout(() => status.innerText = original, 2000);
 }
 
+function resign() {
+    if (isGameOver || game.history().length === 0) return;
+    
+    isGameOver = true;
+    const mestreNome = document.getElementById('nome-mestre').innerText;
+    
+    // Define o resultado no PGN
+    const resultado = userColor === 'w' ? '0-1' : '1-0';
+    game.header('Result', resultado);
+    
+    document.getElementById('status').innerText = `Desististe. ${mestreNome} venceu!`;
+    document.getElementById('status').style.color = "#ff4444";
+    document.getElementById('keyboard-input').disabled = true;
+    document.getElementById('btn-resign').disabled = true;
+    draw();
+}
+
+function checkGameOver() {
+    if (game.game_over()) {
+        isGameOver = true;
+        let msg = "Fim de jogo!";
+        if (game.in_checkmate()) msg = "Xeque-Mate!";
+        else if (game.in_draw()) msg = "Empate!";
+        
+        document.getElementById('status').innerText = msg;
+        document.getElementById('keyboard-input').disabled = true;
+        document.getElementById('btn-resign').disabled = true;
+        return true;
+    }
+    return false;
+}
+
 function draw() {
     const boardEl = document.getElementById('chess-board');
     boardEl.innerHTML = '';
@@ -213,15 +255,15 @@ function draw() {
             pDiv.style.backgroundImage = `url(${pieceImages[piece.color + piece.type.toUpperCase()]})`;
             sq.appendChild(pDiv);
         }
-        sq.onclick = () => handleMove(pos);
+        sq.onclick = () => { if(!isGameOver) handleMove(pos); };
         boardEl.appendChild(sq);
     }
-    document.getElementById('keyboard-input').focus();
+    if (!isGameOver) document.getElementById('keyboard-input').focus();
     updateHistory();
 }
 
 function handleMove(pos) {
-    if (game.game_over()) return;
+    if (isGameOver) return;
     const p = game.get(pos);
 
     if (!selectedSquare) {
@@ -240,12 +282,14 @@ function handleMove(pos) {
 function finalizeMove() {
     playPlim();
     draw();
+    if (checkGameOver()) return;
+    
     document.getElementById('status').innerText = "Mestre a pensar...";
     setTimeout(mestrePlay, 600);
 }
 
 function mestrePlay() {
-    if (game.game_over()) return;
+    if (isGameOver) return;
     stockfish.postMessage("position fen " + game.fen());
     stockfish.postMessage("go movetime 1000");
     stockfish.onmessage = (e) => {
@@ -253,13 +297,15 @@ function mestrePlay() {
             game.move(e.data.split(" ")[1], { sloppy: true });
             playPlim();
             draw();
-            document.getElementById('status').innerText = "Tua vez!";
+            if (!checkGameOver()) {
+                document.getElementById('status').innerText = "Tua vez!";
+            }
         }
     };
 }
 
 document.getElementById('keyboard-input').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !isGameOver) {
         const input = this.value;
         const move = game.move(input);
         if (move) {
@@ -279,11 +325,16 @@ function novoJogo() {
     document.getElementById('foto-mestre').src = mestre + ".jpg";
     
     game.reset();
-    game.header('White', userColor === 'w' ? 'Tu' : mestre, 'Black', userColor === 'b' ? 'Tu' : mestre);
+    isGameOver = false;
+    document.getElementById('keyboard-input').disabled = false;
+    document.getElementById('btn-resign').disabled = false;
+    document.getElementById('status').style.color = "#aaa";
+    
     userColor = Math.random() > 0.5 ? 'w' : 'b'; 
+    game.header('White', userColor === 'w' ? 'Tu' : mestre, 'Black', userColor === 'b' ? 'Tu' : mestre);
+    
     selectedSquare = null;
     document.getElementById('keyboard-input').value = '';
-    
     document.getElementById('status').innerText = `Estás de ${userColor === 'w' ? 'Brancas' : 'Pretas'}!`;
     draw();
 
