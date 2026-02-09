@@ -15,6 +15,16 @@
             margin: 0; 
         }
 
+        /* Garante que as peças mantenham as cores originais mesmo em Dark Mode do sistema */
+        .piece {
+            filter: none !important;
+            -webkit-print-color-adjust: exact;
+        }
+
+        /* Força o tabuleiro a ignorar filtros de inversão de cores */
+        #chess-board {
+        color-scheme: light; /* Diz ao browser para tratar esta área como 'clara' */
+        }
         .check { 
             background: radial-gradient(circle, #ff4d4d 0%, #8b5a2b 100%) !important; 
             box-shadow: inset 0 0 20px #ff0000 !important;
@@ -274,8 +284,11 @@ function draw() {
         sq.onclick = () => { if(!isGameOver) handleMove(pos); };
         boardEl.appendChild(sq);
     }
-    if (!isGameOver) document.getElementById('keyboard-input').focus();
-    updateHistory();
+        if (!isGameOver) {
+        // Só foca o teclado automaticamente se NÃO for um dispositivo touch
+        if (!('ontouchstart' in window) && navigator.maxTouchPoints === 0) {
+            document.getElementById('keyboard-input').focus();
+        }
 }
 
 function handleMove(pos) {
@@ -425,6 +438,7 @@ document.getElementById('btn-sorteio').onclick = novoJogo;
 </script>
 </body>
 </html>
+
 
 
 
