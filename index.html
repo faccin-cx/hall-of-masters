@@ -290,45 +290,33 @@ function handleMove(pos) {
             draw(); 
         }
     } else {
-        // 1. Verificar se é um movimento de peão para a última fila
         const isPromotion = isPromotionMove(selectedSquare, pos);
         
         if (isPromotion) {
-            // 2. Se for promoção, abre o prompt (ou podes futuramente criar um menu)
             const choice = prompt("Promover para: Q (Dama), R (Torre), B (Bispo) ou N (Cavalo)?").toLowerCase();
             const validPieces = ['q', 'r', 'b', 'n'];
-            const piece = validPieces.includes(choice) ? choice : 'q'; // Default para dama se o input for inválido
+            const piece = validPieces.includes(choice) ? choice : 'q';
             
             const move = game.move({ from: selectedSquare, to: pos, promotion: piece });
-            completeMoveSequence(move, p);
+            completeMoveSequence(move, p, pos); // Adicionado 'pos' aqui
         } else {
-            // Movimento normal
             const move = game.move({ from: selectedSquare, to: pos });
-            completeMoveSequence(move, p);
+            completeMoveSequence(move, p, pos); // Adicionado 'pos' aqui
         }
         selectedSquare = null;
     }
 }
 
-// Função auxiliar para evitar repetição de código
-function completeMoveSequence(move, pieceAtPos) {
+function completeMoveSequence(move, pieceAtPos, pos) { // Adicionado 'pos' aqui
     if (move) {
         finalizeMove();
     } else {
-        if (pieceAtPos && pieceAtPos.color === userColor) selectedSquare = pos;
+        // Se o clique foi numa peça da mesma cor, muda a seleção em vez de tentar mover
+        if (pieceAtPos && pieceAtPos.color === userColor) {
+            selectedSquare = pos;
+        }
         draw();
     }
-}
-
-function isPromotionMove(from, to) {
-    const piece = game.get(from);
-    if (!piece || piece.type !== 'p') return false; // Se não for peão, ignora
-
-    // Se for branco e chegar na linha 8, ou preto e chegar na linha 1
-    if (piece.color === 'w' && to[1] === '8') return true;
-    if (piece.color === 'b' && to[1] === '1') return true;
-    
-    return false;
 }
 
 
@@ -427,3 +415,4 @@ document.getElementById('btn-sorteio').onclick = novoJogo;
 </script>
 </body>
 </html>
+
