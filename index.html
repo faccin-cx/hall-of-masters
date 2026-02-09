@@ -15,6 +15,10 @@
             margin: 0; 
         }
 
+        .check { 
+            background: radial-gradient(circle, #ff4d4d 0%, #8b5a2b 100%) !important; 
+            box-shadow: inset 0 0 20px #ff0000 !important;
+        }
         .wood-light { 
             background: #decba4 !important; 
             background-image: repeating-radial-gradient(circle at 10% 10%, rgba(255,255,255,0.05) 0px, transparent 100px) !important;
@@ -236,6 +240,9 @@ function draw() {
     boardEl.innerHTML = '';
     const layout = game.board();
 
+    // Verifica se alguém está em xeque para destacar o rei
+    const inCheck = game.in_check();
+
     for (let i = 0; i < 64; i++) {
         const r = Math.floor(i / 8);
         const c = i % 8;
@@ -246,15 +253,24 @@ function draw() {
         sq.className = 'square ' + ((displayRow + displayCol) % 2 === 0 ? 'wood-light' : 'wood-dark');
         
         const pos = String.fromCharCode(97 + displayCol) + (8 - displayRow);
+        
+        // Destaque de seleção
         if (selectedSquare === pos) sq.classList.add('selected');
 
         const piece = layout[displayRow][displayCol];
+        
         if(piece) {
+            // LÓGICA DO XEQUE: Se o rei for da cor que tem a vez e estiver em xeque
+            if (inCheck && piece.type === 'k' && piece.color === game.turn()) {
+                sq.classList.add('check');
+            }
+
             const pDiv = document.createElement('div');
             pDiv.className = 'piece';
             pDiv.style.backgroundImage = `url(${pieceImages[piece.color + piece.type.toUpperCase()]})`;
             sq.appendChild(pDiv);
         }
+        
         sq.onclick = () => { if(!isGameOver) handleMove(pos); };
         boardEl.appendChild(sq);
     }
@@ -375,4 +391,5 @@ document.getElementById('btn-sorteio').onclick = novoJogo;
 </script>
 </body>
 </html>
+
 
