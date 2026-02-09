@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Hall of Masters - Keyboard & Sound</title>
+    <title>Hall of Masters - PGN & History</title>
     <style>
         body { 
             background: #161512; 
@@ -25,7 +25,7 @@
         }
 
         #chess-board {
-            width: 520px; /* Aumentado ligeiramente */
+            width: 520px;
             height: 520px;
             display: grid;
             grid-template-columns: repeat(8, 1fr);
@@ -46,7 +46,7 @@
         .piece {
             width: 100%;
             height: 100%;
-            background-size: 95%; /* Peças maiores como pedido */
+            background-size: 95%;
             background-repeat: no-repeat;
             background-position: center;
             cursor: pointer;
@@ -54,6 +54,26 @@
         }
 
         .selected { box-shadow: inset 0 0 15px 5px rgba(255, 255, 0, 0.6) !important; }
+
+        /* Estilos do Histórico e PGN */
+        #move-history {
+            width: 100%;
+            height: 120px;
+            background: #1c1a17;
+            border: 1px solid #444;
+            margin-top: 15px;
+            padding: 10px;
+            font-size: 0.9em;
+            overflow-y: auto;
+            color: #ccc;
+            text-align: left;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-content: flex-start;
+        }
+        .move-num { color: #666; font-weight: bold; }
+        .move-text { color: #ffd700; cursor: pointer; }
 
         #keyboard-input {
             width: 100%;
@@ -66,24 +86,45 @@
             font-size: 1.1em;
             text-align: center;
             outline: none;
+            box-sizing: border-box;
         }
         #keyboard-input:focus { border-color: #c3a000; box-shadow: 0 0 5px #c3a000; }
+
+        .btn-secundario {
+            width: 100%;
+            padding: 10px;
+            background: #444;
+            color: #fff;
+            border: none;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+        .btn-secundario:hover { background: #555; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 </head>
 <body>
 
-<div style="display: flex; gap: 40px; flex-wrap: wrap; justify-content: center;">
+<div style="display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; align-items: flex-start;">
     <div id="board-container">
         <div id="chess-board"></div>
         <input type="text" id="keyboard-input" placeholder="Digite seu lance (ex: e4, Nf3...)" autocomplete="off">
     </div>
 
-    <div id="painel" style="width: 280px; background: #262421; padding: 25px; border-radius: 12px; border: 1px solid #444; text-align: center;">
+    <div id="painel" style="width: 300px; background: #262421; padding: 25px; border-radius: 12px; border: 1px solid #444; text-align: center;">
         <img id="foto-mestre" src="" alt="Mestre" style="width: 200px; height: 200px; border-radius: 8px; border: 3px solid #c3a000; object-fit: cover; margin-bottom: 15px; background: #333;">
         <div id="nome-mestre" style="color: #ffd700; font-size: 1.8em; font-weight: bold; margin-bottom: 10px;">SORTEANDO...</div>
+        
         <button id="btn-sorteio" style="width: 100%; padding: 15px; background: #c3a000; color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 8px; font-size: 1.1em;">Novo Desafio</button>
+        
+        <div id="move-history"></div>
+        
+        <button class="btn-secundario" onclick="copyPGN()">Copiar PGN</button>
+        
         <div id="status" style="margin-top: 15px; color: #aaa; font-style: italic;">Aguardando...</div>
     </div>
 </div>
@@ -100,7 +141,7 @@ function playPlim() {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Som agudo "Plim"
+    osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
     gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.2);
     osc.connect(gain);
@@ -123,6 +164,30 @@ try {
     stockfish = new Worker(URL.createObjectURL(sfBlob));
     stockfish.postMessage("uci");
 } catch(e) { console.error(e); }
+
+function updateHistory() {
+    const historyEl = document.getElementById('move-history');
+    const history = game.history();
+    historyEl.innerHTML = '';
+    
+    for (let i = 0; i < history.length; i += 2) {
+        const moveNum = Math.floor(i / 2) + 1;
+        const group = document.createElement('div');
+        group.innerHTML = `<span class="move-num">${moveNum}.</span> <span class="move-text">${history[i]}</span> ${history[i+1] ? `<span class="move-text">${history[i+1]}</span>` : ''}`;
+        historyEl.appendChild(group);
+    }
+    historyEl.scrollTop = historyEl.scrollHeight;
+}
+
+function copyPGN() {
+    const pgn = game.pgn();
+    if (!pgn) return alert("Nenhum lance efetuado!");
+    navigator.clipboard.writeText(pgn);
+    const status = document.getElementById('status');
+    const original = status.innerText;
+    status.innerText = "PGN copiado!";
+    setTimeout(() => status.innerText = original, 2000);
+}
 
 function draw() {
     const boardEl = document.getElementById('chess-board');
@@ -151,8 +216,8 @@ function draw() {
         sq.onclick = () => handleMove(pos);
         boardEl.appendChild(sq);
     }
-    // Sempre focar no input após desenhar
     document.getElementById('keyboard-input').focus();
+    updateHistory();
 }
 
 function handleMove(pos) {
@@ -164,9 +229,8 @@ function handleMove(pos) {
     } else {
         const move = game.move({ from: selectedSquare, to: pos, promotion: 'q' });
         selectedSquare = null;
-        if (move) {
-            finalizeMove();
-        } else {
+        if (move) finalizeMove();
+        else {
             if (p && p.color === userColor) selectedSquare = pos;
             draw();
         }
@@ -194,7 +258,6 @@ function mestrePlay() {
     };
 }
 
-// Lógica de Teclado
 document.getElementById('keyboard-input').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
         const input = this.value;
@@ -216,6 +279,7 @@ function novoJogo() {
     document.getElementById('foto-mestre').src = mestre + ".jpg";
     
     game.reset();
+    game.header('White', userColor === 'w' ? 'Tu' : mestre, 'Black', userColor === 'b' ? 'Tu' : mestre);
     userColor = Math.random() > 0.5 ? 'w' : 'b'; 
     selectedSquare = null;
     document.getElementById('keyboard-input').value = '';
