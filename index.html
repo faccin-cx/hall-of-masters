@@ -193,9 +193,23 @@ function updateHistory() {
 }
 
 function copyPGN() {
-    const pgn = game.pgn();
-    if (!pgn) return alert("Nenhum lance efetuado!");
-    navigator.clipboard.writeText(pgn);
+    // Gerar headers básicos para um PGN formal
+    const mestre = document.getElementById('nome-mestre').innerText;
+    const data = new Date().toISOString().split('T')[0].replace(/-/g, '.');
+    const resultado = game.header().Result || "*"; // Pega o resultado se o jogo acabou, ou "*" se em curso
+
+    let pgnCompleto = `[Event "Desafio Hall of Masters"]\n`;
+    pgnCompleto += `[Site "Localhost"]\n`;
+    pgnCompleto += `[Date "${data}"]\n`;
+    pgnCompleto += `[White "${userColor === 'w' ? 'Tu' : mestre}"]\n`;
+    pgnCompleto += `[Black "${userColor === 'b' ? 'Tu' : mestre}"]\n`;
+    pgnCompleto += `[Result "${resultado}"]\n\n`;
+    pgnCompleto += game.history().map((m, i) => (i % 2 === 0 ? `${Math.floor(i/2)+1}. ${m}` : m)).join(' ');
+
+    if (!game.history().length) return alert("Nenhum lance efetuado!");
+    
+    navigator.clipboard.writeText(pgnCompleto);
+    alert("PGN Completo copiado para a área de transferência!");
 }
 
 function resign() {
@@ -363,3 +377,4 @@ document.getElementById('btn-sorteio').onclick = novoJogo;
 </script>
 </body>
 </html>
+
