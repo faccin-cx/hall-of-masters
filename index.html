@@ -1,155 +1,145 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Hall of Masters - Resign Feature</title>
-    <style>
-        body { 
-            background: #161512; 
-            color: #fff; 
-            font-family: sans-serif; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-            margin: 0; 
-        }
+    <meta charset="UTF-8">
+    <title>Hall of Masters - Resign Feature</title>
+    <style>
+        body { 
+            background: #161512; 
+            color: #fff; 
+            font-family: sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+        }
 
-        /* Garante que as peças mantenham as cores originais mesmo em Dark Mode do sistema */
-        .piece {
-            filter: none !important;
-            -webkit-print-color-adjust: exact;
-        }
+        .check { 
+            background: radial-gradient(circle, #ff4d4d 0%, #8b5a2b 100%) !important; 
+            box-shadow: inset 0 0 20px #ff0000 !important;
+        }
+        .wood-light { 
+            background: #decba4 !important; 
+            background-image: repeating-radial-gradient(circle at 10% 10%, rgba(255,255,255,0.05) 0px, transparent 100px) !important;
+        }
+        .wood-dark { 
+            background: #8b5a2b !important; 
+            background-image: repeating-radial-gradient(circle at 90% 90%, rgba(0,0,0,0.1) 0px, transparent 80px) !important;
+        }
 
-        /* Força o tabuleiro a ignorar filtros de inversão de cores */
-        #chess-board {
-        color-scheme: light; /* Diz ao browser para tratar esta área como 'clara' */
-        }
-        .check { 
-            background: radial-gradient(circle, #ff4d4d 0%, #8b5a2b 100%) !important; 
-            box-shadow: inset 0 0 20px #ff0000 !important;
-        }
-        .wood-light { 
-            background: #decba4 !important; 
-            background-image: repeating-radial-gradient(circle at 10% 10%, rgba(255,255,255,0.05) 0px, transparent 100px) !important;
-        }
-        .wood-dark { 
-            background: #8b5a2b !important; 
-            background-image: repeating-radial-gradient(circle at 90% 90%, rgba(0,0,0,0.1) 0px, transparent 80px) !important;
-        }
+        #chess-board {
+            width: 520px;
+            height: 520px;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            border: 12px solid #3d2d1e;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+        }
 
-        #chess-board {
-            width: 520px;
-            height: 520px;
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            grid-template-rows: repeat(8, 1fr);
-            border: 12px solid #3d2d1e;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
-        }
+        .square {
+            width: 65px;
+            height: 65px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-        .square {
-            width: 65px;
-            height: 65px;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+        .piece {
+            width: 100%;
+            height: 100%;
+            background-size: 95%;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
+            z-index: 10;
+        }
 
-        .piece {
-            width: 100%;
-            height: 100%;
-            background-size: 95%;
-            background-repeat: no-repeat;
-            background-position: center;
-            cursor: pointer;
-            z-index: 10;
-        }
+        .selected { box-shadow: inset 0 0 15px 5px rgba(255, 255, 0, 0.6) !important; }
 
-        .selected { box-shadow: inset 0 0 15px 5px rgba(255, 255, 0, 0.6) !important; }
+        #move-history {
+            width: 100%;
+            height: 120px;
+            background: #1c1a17;
+            border: 1px solid #444;
+            margin-top: 15px;
+            padding: 10px;
+            font-size: 0.9em;
+            overflow-y: auto;
+            color: #ccc;
+            text-align: left;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-content: flex-start;
+            box-sizing: border-box;
+        }
+        .move-num { color: #666; font-weight: bold; }
+        .move-text { color: #ffd700; }
 
-        #move-history {
-            width: 100%;
-            height: 120px;
-            background: #1c1a17;
-            border: 1px solid #444;
-            margin-top: 15px;
-            padding: 10px;
-            font-size: 0.9em;
-            overflow-y: auto;
-            color: #ccc;
-            text-align: left;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-content: flex-start;
-            box-sizing: border-box;
-        }
-        .move-num { color: #666; font-weight: bold; }
-        .move-text { color: #ffd700; }
+        #keyboard-input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            border-radius: 4px;
+            font-size: 1.1em;
+            text-align: center;
+            outline: none;
+            box-sizing: border-box;
+        }
+        #keyboard-input:focus { border-color: #c3a000; box-shadow: 0 0 5px #c3a000; }
+        #keyboard-input:disabled { background: #1a1a1a; color: #555; cursor: not-allowed; }
 
-        #keyboard-input {
-            width: 100%;
-            padding: 12px;
-            margin-top: 15px;
-            background: #333;
-            border: 1px solid #555;
-            color: #fff;
-            border-radius: 4px;
-            font-size: 1.1em;
-            text-align: center;
-            outline: none;
-            box-sizing: border-box;
-        }
-        #keyboard-input:focus { border-color: #c3a000; box-shadow: 0 0 5px #c3a000; }
-        #keyboard-input:disabled { background: #1a1a1a; color: #555; cursor: not-allowed; }
+        .btn-secundario {
+            width: 100%;
+            padding: 10px;
+            background: #444;
+            color: #fff;
+            border: none;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+        .btn-secundario:hover { background: #555; }
 
-        .btn-secundario {
-            width: 100%;
-            padding: 10px;
-            background: #444;
-            color: #fff;
-            border: none;
-            margin-top: 10px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 0.9em;
-            transition: background 0.2s;
-        }
-        .btn-secundario:hover { background: #555; }
-
-        .btn-resign {
-            background: #5c2121;
-        }
-        .btn-resign:hover { background: #822e2e; }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+        .btn-resign {
+            background: #5c2121;
+        }
+        .btn-resign:hover { background: #822e2e; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 </head>
 <body>
 
 <div style="display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; align-items: flex-start;">
-    <div id="board-container">
-        <div id="chess-board"></div>
-        <input type="text" id="keyboard-input" placeholder="Digite seu lance (ex: e4, Nf3...)" autocomplete="off">
-    </div>
+    <div id="board-container">
+        <div id="chess-board"></div>
+        <input type="text" id="keyboard-input" placeholder="Digite seu lance (ex: e4, Nf3...)" autocomplete="off">
+    </div>
 
-    <div id="painel" style="width: 300px; background: #262421; padding: 25px; border-radius: 12px; border: 1px solid #444; text-align: center;">
-        <img id="foto-mestre" src="" alt="Mestre" style="width: 200px; height: 200px; border-radius: 8px; border: 3px solid #c3a000; object-fit: cover; margin-bottom: 15px; background: #333;">
-        <div id="nome-mestre" style="color: #ffd700; font-size: 1.8em; font-weight: bold; margin-bottom: 10px;">SORTEANDO...</div>
-        
-        <button id="btn-sorteio" style="width: 100%; padding: 15px; background: #c3a000; color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 8px; font-size: 1.1em;">Novo Desafio</button>
-        
-        <div id="move-history"></div>
-        
-        <div style="display: flex; gap: 10px;">
-            <button class="btn-secundario" onclick="copyPGN()">Copiar PGN</button>
-            <button id="btn-resign" class="btn-secundario btn-resign" onclick="resign()">Desistir</button>
-        </div>
-        
-        <div id="status" style="margin-top: 15px; color: #aaa; font-style: italic;">Aguardando...</div>
-    </div>
+    <div id="painel" style="width: 300px; background: #262421; padding: 25px; border-radius: 12px; border: 1px solid #444; text-align: center;">
+        <img id="foto-mestre" src="" alt="Mestre" style="width: 200px; height: 200px; border-radius: 8px; border: 3px solid #c3a000; object-fit: cover; margin-bottom: 15px; background: #333;">
+        <div id="nome-mestre" style="color: #ffd700; font-size: 1.8em; font-weight: bold; margin-bottom: 10px;">SORTEANDO...</div>
+        
+        <button id="btn-sorteio" style="width: 100%; padding: 15px; background: #c3a000; color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 8px; font-size: 1.1em;">Novo Desafio</button>
+        
+        <div id="move-history"></div>
+        
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-secundario" onclick="copyPGN()">Copiar PGN</button>
+            <button id="btn-resign" class="btn-secundario btn-resign" onclick="resign()">Desistir</button>
+        </div>
+        
+        <div id="status" style="margin-top: 15px; color: #aaa; font-style: italic;">Aguardando...</div>
+    </div>
 </div>
 
 <script>
@@ -174,20 +164,19 @@ function playPlim() {
     osc.stop(audioCtx.currentTime + 0.2);
 }
 
-// Links corrigidos e estáveis (Alpha Style)
 const pieceImages = {
-    'wP': 'https://lichess1.org/assets/_6S6YmC/piece/alpha/wP.svg',
-    'wN': 'https://lichess1.org/assets/_6S6YmC/piece/alpha/wN.svg',
-    'wB': 'https://lichess1.org/assets/_6S6YmC/piece/alpha/wB.svg',
-    'wR': 'https://lichess1.org/assets/_6S6YmC/piece/alpha/wR.svg',
-    'wQ': 'https://lichess1.org/assets/_6S6YmC/piece/alpha/wQ.svg',
-    'wK': 'https://lichess1.org/assets/_6S6YmC/piece/alpha/wK.svg',
-    'bP': 'https://lichess1.org/assets/_6S6YmC/piece/alpha/bP.svg',
-    'bN': 'https://lichess1.org/assets/_6S6YmC/piece/alpha/bN.svg',
-    'bB': 'https://lichess1.org/assets/_6S6YmC/piece/alpha/bB.svg',
-    'bR': 'https://lichess1.org/assets/_6S6YmC/piece/alpha/bR.svg',
-    'bQ': 'https://lichess1.org/assets/_6S6YmC/piece/alpha/bQ.svg',
-    'bK': 'https://lichess1.org/assets/_6S6YmC/piece/alpha/bK.svg'
+    'wP': 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg',
+    'wN': 'https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg',
+    'wB': 'https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg',
+    'wR': 'https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg',
+    'wQ': 'https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg',
+    'wK': 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg',
+    'bP': 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg',
+    'bN': 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
+    'bB': 'https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg',
+    'bR': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
+    'bQ': 'https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg',
+    'bK': 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg'
 };
 
 try {
@@ -222,10 +211,14 @@ function copyPGN() {
 
 function resign() {
     if (isGameOver || game.history().length === 0) return;
+    
     isGameOver = true;
     const mestreNome = document.getElementById('nome-mestre').innerText;
+    
+    // Define o resultado no PGN
     const resultado = userColor === 'w' ? '0-1' : '1-0';
     game.header('Result', resultado);
+    
     document.getElementById('status').innerText = `Desististe. ${mestreNome} venceu!`;
     document.getElementById('status').style.color = "#ff4444";
     document.getElementById('keyboard-input').disabled = true;
@@ -239,6 +232,7 @@ function checkGameOver() {
         let msg = "Fim de jogo!";
         if (game.in_checkmate()) msg = "Xeque-Mate!";
         else if (game.in_draw()) msg = "Empate!";
+        
         document.getElementById('status').innerText = msg;
         document.getElementById('keyboard-input').disabled = true;
         document.getElementById('btn-resign').disabled = true;
@@ -251,36 +245,46 @@ function draw() {
     const boardEl = document.getElementById('chess-board');
     boardEl.innerHTML = '';
     const layout = game.board();
+
+    // Verifica se alguém está em xeque para destacar o rei
     const inCheck = game.in_check();
 
-    for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-            const displayRow = (userColor === 'w') ? r : 7 - r;
-            const displayCol = (userColor === 'w') ? c : 7 - c;
-            
-            const sq = document.createElement('div');
-            sq.className = 'square ' + ((displayRow + displayCol) % 2 === 0 ? 'wood-light' : 'wood-dark');
-            
-            const pos = String.fromCharCode(97 + displayCol) + (8 - displayRow);
-            if (selectedSquare === pos) sq.classList.add('selected');
+    for (let i = 0; i < 64; i++) {
+        const r = Math.floor(i / 8);
+        const c = i % 8;
+        const displayRow = (userColor === 'w') ? r : 7 - r;
+        const displayCol = (userColor === 'w') ? c : 7 - c;
 
-            const piece = layout[displayRow][displayCol];
-            if(piece) {
-                if (inCheck && piece.type === 'k' && piece.color === game.turn()) {
-                    sq.classList.add('check');
-                }
-                const pDiv = document.createElement('div');
-                pDiv.className = 'piece';
-                pDiv.style.backgroundImage = `url(${pieceImages[piece.color + piece.type.toUpperCase()]})`;
-                sq.appendChild(pDiv);
+        const sq = document.createElement('div');
+        sq.className = 'square ' + ((displayRow + displayCol) % 2 === 0 ? 'wood-light' : 'wood-dark');
+        
+        const pos = String.fromCharCode(97 + displayCol) + (8 - displayRow);
+        
+        // Destaque de seleção
+        if (selectedSquare === pos) sq.classList.add('selected');
+
+        const piece = layout[displayRow][displayCol];
+        
+        if(piece) {
+            // LÓGICA DO XEQUE: Se o rei for da cor que tem a vez e estiver em xeque
+            if (inCheck && piece.type === 'k' && piece.color === game.turn()) {
+                sq.classList.add('check');
             }
-            sq.onclick = () => { if(!isGameOver) handleMove(pos); };
-            boardEl.appendChild(sq);
+
+            const pDiv = document.createElement('div');
+            pDiv.className = 'piece';
+            pDiv.style.backgroundImage = `url(${pieceImages[piece.color + piece.type.toUpperCase()]})`;
+            sq.appendChild(pDiv);
         }
+        
+        sq.onclick = () => { if(!isGameOver) handleMove(pos); };
+        boardEl.appendChild(sq);
     }
-    updateHistory();
-    if (!isGameOver && !('ontouchstart' in window)) {
-        document.getElementById('keyboard-input').focus();
+        if (!isGameOver) {
+        // Só foca o teclado automaticamente se NÃO for um dispositivo touch
+        if (!('ontouchstart' in window) && navigator.maxTouchPoints === 0) {
+            document.getElementById('keyboard-input').focus();
+        }
     }
 }
 
@@ -294,72 +298,105 @@ function handleMove(pos) {
             draw(); 
         }
     } else {
+        // 1. Verificar se é um movimento de peão para a última fila
         const isPromotion = isPromotionMove(selectedSquare, pos);
-        let move = null;
-
+        
         if (isPromotion) {
-            const choice = prompt("Promover para: Q (Dama), R (Torre), B (Bispo) ou N (Cavalo)?")?.toLowerCase();
-            const valid = ['q', 'r', 'b', 'n'];
-            move = game.move({ from: selectedSquare, to: pos, promotion: valid.includes(choice) ? choice : 'q' });
+            // 2. Se for promoção, abre o prompt (ou podes futuramente criar um menu)
+            const choice = prompt("Promover para: Q (Dama), R (Torre), B (Bispo) ou N (Cavalo)?").toLowerCase();
+            const validPieces = ['q', 'r', 'b', 'n'];
+            const piece = validPieces.includes(choice) ? choice : 'q'; // Default para dama se o input for inválido
+            
+            const move = game.move({ from: selectedSquare, to: pos, promotion: piece });
+            completeMoveSequence(move, p);
         } else {
-            move = game.move({ from: selectedSquare, to: pos });
+            // Movimento normal
+            const move = game.move({ from: selectedSquare, to: pos });
+            completeMoveSequence(move, p);
         }
-
-        if (move) {
-            selectedSquare = null;
-            finalizeMove();
-        } else {
-            // Se clicou noutra peça própria, troca a seleção
-            if (p && p.color === userColor) {
-                selectedSquare = pos;
-                draw();
-            } else {
-                selectedSquare = null;
-                draw();
-            }
-        }
+        selectedSquare = null;
     }
 }
 
 function isPromotionMove(from, to) {
     const piece = game.get(from);
-    if (!piece || piece.type !== 'p') return false;
-    return (piece.color === 'w' && to[1] === '8') || (piece.color === 'b' && to[1] === '1');
+    if (!piece || piece.type !== 'p') return false; // Se não for peão, ignora
+
+    // Se for branco e chegar na linha 8, ou preto e chegar na linha 1
+    if (piece.color === 'w' && to[1] === '8') return true;
+    if (piece.color === 'b' && to[1] === '1') return true;
+    
+    return false;
 }
+
+// Função auxiliar para evitar repetição de código
+function completeMoveSequence(move, pieceAtPos) {
+    if (move) {
+        finalizeMove();
+    } else {
+        if (pieceAtPos && pieceAtPos.color === userColor) selectedSquare = pos;
+        draw();
+    }
+}
+
 
 function finalizeMove() {
     playPlim();
     draw();
     if (checkGameOver()) return;
+    
     document.getElementById('status').innerText = "Mestre a pensar...";
-    setTimeout(mestrePlay, getMestreDelay());
+    
+    // Calcula o delay com base na fase do jogo
+    const delay = getMestreDelay();
+    setTimeout(mestrePlay, delay);
 }
 
 function getMestreDelay() {
-    const lances = game.history().length;
-    if (lances <= 20) return 1000 + Math.random() * 1000;
-    if (lances <= 60) return 2500 + Math.random() * 2000;
-    return 1500 + Math.random() * 1500;
+    const lancesTotais = game.history().length;
+    let min, max;
+
+    if (lancesTotais <= 20) { 
+        // Abertura: até o lance 10 de cada (20 movimentos totais)
+        min = 1000; max = 2000;
+    } else if (lancesTotais <= 60) {
+        // Meio-jogo: até o lance 30 de cada (60 movimentos totais)
+        min = 3000; max = 6000;
+    } else {
+        // Final: após o lance 30
+        min = 2000; max = 4000;
+    }
+
+    return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 function mestrePlay() {
     if (isGameOver) return;
+    
+    // Mantemos o movetime do engine em 1000ms para garantir qualidade no lance
     stockfish.postMessage("position fen " + game.fen());
     stockfish.postMessage("go movetime 1000");
+    
     stockfish.onmessage = (e) => {
         if (e.data.includes("bestmove")) {
             const move = e.data.split(" ")[1];
+            
+            // Pequeno truque: se o engine respondeu MUITO rápido (antes do delay visual), 
+            // a gente garante que o movimento só apareça após o processamento.
             game.move(move, { sloppy: true });
             playPlim();
             draw();
-            if (!checkGameOver()) document.getElementById('status').innerText = "Tua vez!";
+            if (!checkGameOver()) {
+                document.getElementById('status').innerText = "Tua vez!";
+            }
         }
     };
 }
 
 document.getElementById('keyboard-input').addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !isGameOver) {
-        const move = game.move(this.value);
+        const input = this.value;
+        const move = game.move(input);
         if (move) {
             this.value = '';
             finalizeMove();
@@ -375,22 +412,26 @@ function novoJogo() {
     const mestre = mestres[Math.floor(Math.random() * mestres.length)];
     document.getElementById('nome-mestre').innerText = mestre.toUpperCase();
     document.getElementById('foto-mestre').src = mestre + ".jpg";
+    
     game.reset();
     isGameOver = false;
     document.getElementById('keyboard-input').disabled = false;
     document.getElementById('btn-resign').disabled = false;
+    document.getElementById('status').style.color = "#aaa";
+    
     userColor = Math.random() > 0.5 ? 'w' : 'b'; 
+    game.header('White', userColor === 'w' ? 'Tu' : mestre, 'Black', userColor === 'b' ? 'Tu' : mestre);
+    
     selectedSquare = null;
     document.getElementById('keyboard-input').value = '';
     document.getElementById('status').innerText = `Estás de ${userColor === 'w' ? 'Brancas' : 'Pretas'}!`;
     draw();
+
     if (userColor === 'b') setTimeout(mestrePlay, 1000); 
 }
 
 window.onload = novoJogo;
 document.getElementById('btn-sorteio').onclick = novoJogo;
-    
 </script>
 </body>
 </html>
-
