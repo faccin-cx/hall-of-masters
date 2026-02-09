@@ -1,139 +1,151 @@
+Bom, refiz os passos de hoje até a parte que funcionou, só que a anotação PGN ainda não voltou e notei que o código mudou a endentação (acho que é assim que escreve). 
+
+Aponte onde está o erro no código abaixo:
+
 <!DOCTYPE html>
-<html lang="en-GB">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Hall of Masters - Fixed Version</title>
-    <style>
-        body { 
-            background: #161512; 
-            color: #fff; 
-            font-family: sans-serif; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-            margin: 0; 
-        }
+    <meta charset="UTF-8">
+    <title>Hall of Masters - Resign Feature</title>
+    <style>
+        body { 
+            background: #161512; 
+            color: #fff; 
+            font-family: sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+        }
 
-        /* Red glow for King in check - Visual aid */
-        .check { 
-            background: radial-gradient(circle, #ff4d4d 0%, #8b5a2b 100%) !important; 
-            box-shadow: inset 0 0 20px #ff0000 !important;
-        }
-        .wood-light { 
-            background: #decba4 !important; 
-            background-image: repeating-radial-gradient(circle at 10% 10%, rgba(255,255,255,0.05) 0px, transparent 100px) !important;
-        }
-        .wood-dark { 
-            background: #8b5a2b !important; 
-            background-image: repeating-radial-gradient(circle at 90% 90%, rgba(0,0,0,0.1) 0px, transparent 80px) !important;
-        }
 
-        #chess-board {
-            width: 520px;
-            height: 520px;
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            grid-template-rows: repeat(8, 1fr);
-            border: 12px solid #3d2d1e;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
-        }
+        /* Efeito de brilho vermelho para o Rei em xeque */
+        .check { 
+            background: radial-gradient(circle, #ff4d4d 0%, #8b5a2b 100%) !important; 
+            box-shadow: inset 0 0 20px #ff0000 !important;
+        }
+        .wood-light { 
+            background: #decba4 !important; 
+            background-image: repeating-radial-gradient(circle at 10% 10%, rgba(255,255,255,0.05) 0px, transparent 100px) !important;
+        }
+        .wood-dark { 
+            background: #8b5a2b !important; 
+            background-image: repeating-radial-gradient(circle at 90% 90%, rgba(0,0,0,0.1) 0px, transparent 80px) !important;
+        }
 
-        .square {
-            width: 65px;
-            height: 65px;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+        #chess-board {
+            width: 520px;
+            height: 520px;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            border: 12px solid #3d2d1e;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+        }
 
-        .piece {
-            width: 100%;
-            height: 100%;
-            background-size: 95%;
-            background-repeat: no-repeat;
-            background-position: center;
-            cursor: pointer;
-            z-index: 10;
-        }
+        .square {
+            width: 65px;
+            height: 65px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-        .selected { box-shadow: inset 0 0 15px 5px rgba(255, 255, 0, 0.6) !important; }
+        .piece {
+            width: 100%;
+            height: 100%;
+            background-size: 95%;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
+            z-index: 10;
+        }
 
-        #move-history {
-            width: 100%;
-            height: 120px;
-            background: #1c1a17;
-            border: 1px solid #444;
-            margin-top: 15px;
-            padding: 10px;
-            font-size: 0.9em;
-            overflow-y: auto;
-            color: #ccc;
-            text-align: left;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-content: flex-start;
-            box-sizing: border-box;
-        }
-        .move-num { color: #666; font-weight: bold; }
-        .move-text { color: #ffd700; }
+        .selected { box-shadow: inset 0 0 15px 5px rgba(255, 255, 0, 0.6) !important; }
 
-        #keyboard-input {
-            width: 100%;
-            padding: 12px;
-            margin-top: 15px;
-            background: #333;
-            border: 1px solid #555;
-            color: #fff;
-            border-radius: 4px;
-            font-size: 1.1em;
-            text-align: center;
-            outline: none;
-            box-sizing: border-box;
-        }
-        #keyboard-input:focus { border-color: #c3a000; box-shadow: 0 0 5px #c3a000; }
+        #move-history {
+            width: 100%;
+            height: 120px;
+            background: #1c1a17;
+            border: 1px solid #444;
+            margin-top: 15px;
+            padding: 10px;
+            font-size: 0.9em;
+            overflow-y: auto;
+            color: #ccc;
+            text-align: left;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-content: flex-start;
+            box-sizing: border-box;
+        }
+        .move-num { color: #666; font-weight: bold; }
+        .move-text { color: #ffd700; }
 
-        .btn-secundario {
-            width: 100%;
-            padding: 10px;
-            background: #444;
-            color: #fff;
-            border: none;
-            margin-top: 10px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 0.9em;
-        }
-        .btn-resign { background: #5c2121; }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+        #keyboard-input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            border-radius: 4px;
+            font-size: 1.1em;
+            text-align: center;
+            outline: none;
+            box-sizing: border-box;
+        }
+        #keyboard-input:focus { border-color: #c3a000; box-shadow: 0 0 5px #c3a000; }
+        #keyboard-input:disabled { background: #1a1a1a; color: #555; cursor: not-allowed; }
+
+        .btn-secundario {
+            width: 100%;
+            padding: 10px;
+            background: #444;
+            color: #fff;
+            border: none;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+        .btn-secundario:hover { background: #555; }
+
+        .btn-resign {
+            background: #5c2121;
+        }
+        .btn-resign:hover { background: #822e2e; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 </head>
 <body>
 
 <div style="display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; align-items: flex-start;">
-    <div id="board-container">
-        <div id="chess-board"></div>
-        <input type="text" id="keyboard-input" placeholder="Type move (e.g. e4, Nf3...)" autocomplete="off">
-    </div>
+    <div id="board-container">
+        <div id="chess-board"></div>
+        <input type="text" id="keyboard-input" placeholder="Digite seu lance (ex: e4, Nf3...)" autocomplete="off">
+    </div>
 
-    <div id="painel" style="width: 300px; background: #262421; padding: 25px; border-radius: 12px; border: 1px solid #444; text-align: center;">
-        <img id="foto-mestre" src="" alt="Master" style="width: 200px; height: 200px; border-radius: 8px; border: 3px solid #c3a000; object-fit: cover; margin-bottom: 15px; background: #333;">
-        <div id="nome-mestre" style="color: #ffd700; font-size: 1.8em; font-weight: bold; margin-bottom: 10px;">PICKING...</div>
-        
-        <button id="btn-sorteio" style="width: 100%; padding: 15px; background: #c3a000; color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 8px; font-size: 1.1em;">New Challenge</button>
-        
-        <div id="move-history"></div>
-        
-        <div style="display: flex; gap: 10px;">
-            <button class="btn-secundario" onclick="copyPGN()">Copy PGN</button>
-            <button id="btn-resign" class="btn-secundario btn-resign" onclick="resign()">Resign</button>
-        </div>
-        
-        <div id="status" style="margin-top: 15px; color: #aaa; font-style: italic;">Waiting...</div>
-    </div>
+    <div id="painel" style="width: 300px; background: #262421; padding: 25px; border-radius: 12px; border: 1px solid #444; text-align: center;">
+        <img id="foto-mestre" src="" alt="Mestre" style="width: 200px; height: 200px; border-radius: 8px; border: 3px solid #c3a000; object-fit: cover; margin-bottom: 15px; background: #333;">
+        <div id="nome-mestre" style="color: #ffd700; font-size: 1.8em; font-weight: bold; margin-bottom: 10px;">SORTEANDO...</div>
+        
+        <button id="btn-sorteio" style="width: 100%; padding: 15px; background: #c3a000; color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 8px; font-size: 1.1em;">Novo Desafio</button>
+        
+        <div id="move-history"></div>
+        
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-secundario" onclick="copyPGN()">Copiar PGN</button>
+            <button id="btn-resign" class="btn-secundario btn-resign" onclick="resign()">Desistir</button>
+        </div>
+        
+        <div id="status" style="margin-top: 15px; color: #aaa; font-style: italic;">Aguardando...</div>
+    </div>
 </div>
 
 <script>
@@ -146,180 +158,272 @@ let isGameOver = false;
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 function playPlim() {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.2);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.2);
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.2);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.2);
 }
 
 const pieceImages = {
-    'wP': 'https://lichess1.org/assets/piece/alpha/wP.svg', 'wN': 'https://lichess1.org/assets/piece/alpha/wN.svg',
-    'wB': 'https://lichess1.org/assets/piece/alpha/wB.svg', 'wR': 'https://lichess1.org/assets/piece/alpha/wR.svg',
-    'wQ': 'https://lichess1.org/assets/piece/alpha/wQ.svg', 'wK': 'https://lichess1.org/assets/piece/alpha/wK.svg',
-    'bP': 'https://lichess1.org/assets/piece/alpha/bP.svg', 'bN': 'https://lichess1.org/assets/piece/alpha/bN.svg',
-    'bB': 'https://lichess1.org/assets/piece/alpha/bB.svg', 'bR': 'https://lichess1.org/assets/piece/alpha/bR.svg',
-    'bQ': 'https://lichess1.org/assets/piece/alpha/bQ.svg', 'bK': 'https://lichess1.org/assets/piece/alpha/bK.svg'
+    'wP': 'https://lichess1.org/assets/piece/alpha/wP.svg', 'wN': 'https://lichess1.org/assets/piece/alpha/wN.svg',
+    'wB': 'https://lichess1.org/assets/piece/alpha/wB.svg', 'wR': 'https://lichess1.org/assets/piece/alpha/wR.svg',
+    'wQ': 'https://lichess1.org/assets/piece/alpha/wQ.svg', 'wK': 'https://lichess1.org/assets/piece/alpha/wK.svg',
+    'bP': 'https://lichess1.org/assets/piece/alpha/bP.svg', 'bN': 'https://lichess1.org/assets/piece/alpha/bN.svg',
+    'bB': 'https://lichess1.org/assets/piece/alpha/bB.svg', 'bR': 'https://lichess1.org/assets/piece/alpha/bR.svg',
+    'bQ': 'https://lichess1.org/assets/piece/alpha/bQ.svg', 'bK': 'https://lichess1.org/assets/piece/alpha/bK.svg'
 };
 
 try {
-    const sfBlob = new Blob(["importScripts('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js');"], {type: "text/javascript"});
-    stockfish = new Worker(URL.createObjectURL(sfBlob));
-    stockfish.postMessage("uci");
+    const sfBlob = new Blob(["importScripts('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js');"], {type: "text/javascript"});
+    stockfish = new Worker(URL.createObjectURL(sfBlob));
+    stockfish.postMessage("uci");
 } catch(e) { console.error(e); }
 
 function updateHistory() {
-    const historyEl = document.getElementById('move-history');
-    const history = game.history();
-    historyEl.innerHTML = '';
-    
-    for (let i = 0; i < history.length; i += 2) {
-        const moveNum = Math.floor(i / 2) + 1;
-        const group = document.createElement('div');
-        group.innerHTML = `<span class="move-num">${moveNum}.</span> <span class="move-text">${history[i]}</span> ${history[i+1] ? `<span class="move-text">${history[i+1]}</span>` : ''}`;
-        historyEl.appendChild(group);
-    }
-    historyEl.scrollTop = historyEl.scrollHeight;
+    const historyEl = document.getElementById('move-history');
+    const history = game.history();
+    historyEl.innerHTML = '';
+    
+    for (let i = 0; i < history.length; i += 2) {
+        const moveNum = Math.floor(i / 2) + 1;
+        const group = document.createElement('div');
+        group.innerHTML = `<span class="move-num">${moveNum}.</span> <span class="move-text">${history[i]}</span> ${history[i+1] ? `<span class="move-text">${history[i+1]}</span>` : ''}`;
+        historyEl.appendChild(group);
+    }
+    historyEl.scrollTop = historyEl.scrollHeight;
 }
 
 function copyPGN() {
-    const pgn = game.pgn();
-    if (!pgn) return alert("No moves yet!");
-    navigator.clipboard.writeText(pgn);
-    document.getElementById('status').innerText = "PGN Copied!";
+    const pgn = game.pgn();
+    if (!pgn) return alert("Nenhum lance efetuado!");
+    navigator.clipboard.writeText(pgn);
+    const status = document.getElementById('status');
+    const original = status.innerText;
+    status.innerText = "PGN copiado!";
+    setTimeout(() => status.innerText = original, 2000);
 }
 
 function resign() {
-    if (isGameOver || game.history().length === 0) return;
-    isGameOver = true;
-    const mestreNome = document.getElementById('nome-mestre').innerText;
-    document.getElementById('status').innerText = `You resigned. ${mestreNome} wins!`;
-    document.getElementById('keyboard-input').disabled = true;
-    draw();
+    if (isGameOver || game.history().length === 0) return;
+    
+    isGameOver = true;
+    const mestreNome = document.getElementById('nome-mestre').innerText;
+    
+    // Define o resultado no PGN
+    const resultado = userColor === 'w' ? '0-1' : '1-0';
+    game.header('Result', resultado);
+    
+    document.getElementById('status').innerText = `Desististe. ${mestreNome} venceu!`;
+    document.getElementById('status').style.color = "#ff4444";
+    document.getElementById('keyboard-input').disabled = true;
+    document.getElementById('btn-resign').disabled = true;
+    draw();
 }
 
 function checkGameOver() {
-    if (game.game_over()) {
-        isGameOver = true;
-        let msg = "Game Over!";
-        if (game.in_checkmate()) msg = "Checkmate!";
-        else if (game.in_draw()) msg = "Draw!";
-        document.getElementById('status').innerText = msg;
-        document.getElementById('keyboard-input').disabled = true;
-        return true;
-    }
-    return false;
+    if (game.game_over()) {
+        isGameOver = true;
+        let msg = "Fim de jogo!";
+        if (game.in_checkmate()) msg = "Xeque-Mate!";
+        else if (game.in_draw()) msg = "Empate!";
+        
+        document.getElementById('status').innerText = msg;
+        document.getElementById('keyboard-input').disabled = true;
+        document.getElementById('btn-resign').disabled = true;
+        return true;
+    }
+    return false;
 }
 
 function draw() {
-    const boardEl = document.getElementById('chess-board');
-    if (!boardEl) return;
-    boardEl.innerHTML = '';
-    const layout = game.board();
-    const inCheck = game.in_check();
+    const boardEl = document.getElementById('chess-board');
+    boardEl.innerHTML = '';
+    const layout = game.board();
 
-    for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-            const displayRow = (userColor === 'w') ? r : 7 - r;
-            const displayCol = (userColor === 'w') ? c : 7 - c;
+    // Verifica se alguém está em xeque para destacar o rei
+    const inCheck = game.in_check();
 
-            const sq = document.createElement('div');
-            sq.className = 'square ' + ((displayRow + displayCol) % 2 === 0 ? 'wood-light' : 'wood-dark');
-            
-            const pos = String.fromCharCode(97 + displayCol) + (8 - displayRow);
-            if (selectedSquare === pos) sq.classList.add('selected');
+    for (let i = 0; i < 64; i++) {
+        const r = Math.floor(i / 8);
+        const c = i % 8;
+        const displayRow = (userColor === 'w') ? r : 7 - r;
+        const displayCol = (userColor === 'w') ? c : 7 - c;
 
-            const piece = layout[displayRow][displayCol];
-            if(piece) {
-                if (inCheck && piece.type === 'k' && piece.color === game.turn()) {
-                    sq.classList.add('check');
-                }
-                const pDiv = document.createElement('div');
-                pDiv.className = 'piece';
-                pDiv.style.backgroundImage = `url(${pieceImages[piece.color + piece.type.toUpperCase()]})`;
-                sq.appendChild(pDiv);
-            }
-            sq.onclick = () => handleMove(pos);
-            boardEl.appendChild(sq);
-        }
-    }
-    updateHistory();
+        const sq = document.createElement('div');
+        sq.className = 'square ' + ((displayRow + displayCol) % 2 === 0 ? 'wood-light' : 'wood-dark');
+        
+        const pos = String.fromCharCode(97 + displayCol) + (8 - displayRow);
+        
+        // Destaque de seleção
+        if (selectedSquare === pos) sq.classList.add('selected');
+
+        const piece = layout[displayRow][displayCol];
+        
+        if(piece) {
+            // LÓGICA DO XEQUE: Se o rei for da cor que tem a vez e estiver em xeque
+            if (inCheck && piece.type === 'k' && piece.color === game.turn()) {
+                sq.classList.add('check');
+            }
+
+            const pDiv = document.createElement('div');
+            pDiv.className = 'piece';
+            pDiv.style.backgroundImage = `url(${pieceImages[piece.color + piece.type.toUpperCase()]})`;
+            sq.appendChild(pDiv);
+        }
+        
+        sq.onclick = () => { if(!isGameOver) handleMove(pos); };
+        boardEl.appendChild(sq);
+    }
+    if (!isGameOver) document.getElementById('keyboard-input').focus();
+    updateHistory();
 }
 
 function handleMove(pos) {
-    if (isGameOver) return;
-    const p = game.get(pos);
+    if (isGameOver) return;
+    const p = game.get(pos);
 
-    if (!selectedSquare) {
-        if (p && p.color === userColor) { 
-            selectedSquare = pos; 
-            draw(); 
-        }
-    } else {
-        const move = game.move({ from: selectedSquare, to: pos, promotion: 'q' });
-        if (move) {
-            selectedSquare = null;
-            finalizeMove();
-        } else {
-            // Se clicar noutra peça tua, muda a selecção
-            if (p && p.color === userColor) {
-                selectedSquare = pos;
-                draw();
-            }
-        }
-    }
+    if (!selectedSquare) {
+        if (p && p.color === userColor) { 
+            selectedSquare = pos; 
+            draw(); 
+        }
+    } else {
+        // 1. Verificar se é um movimento de peão para a última fila
+        const isPromotion = isPromotionMove(selectedSquare, pos);
+        
+        if (isPromotion) {
+            // 2. Se for promoção, abre o prompt (ou podes futuramente criar um menu)
+            const choice = prompt("Promover para: Q (Dama), R (Torre), B (Bispo) ou N (Cavalo)?").toLowerCase();
+            const validPieces = ['q', 'r', 'b', 'n'];
+            const piece = validPieces.includes(choice) ? choice : 'q'; // Default para dama se o input for inválido
+            
+            const move = game.move({ from: selectedSquare, to: pos, promotion: piece });
+            completeMoveSequence(move, p);
+        } else {
+            // Movimento normal
+            const move = game.move({ from: selectedSquare, to: pos });
+            completeMoveSequence(move, p);
+        }
+        selectedSquare = null;
+    }
 }
 
+// Função auxiliar para evitar repetição de código
+function completeMoveSequence(move, pieceAtPos) {
+    if (move) {
+        finalizeMove();
+    } else {
+        if (pieceAtPos && pieceAtPos.color === userColor) selectedSquare = pos;
+        draw();
+    }
+}
+
+function isPromotionMove(from, to) {
+    const piece = game.get(from);
+    if (!piece || piece.type !== 'p') return false; // Se não for peão, ignora
+
+    // Se for branco e chegar na linha 8, ou preto e chegar na linha 1
+    if (piece.color === 'w' && to[1] === '8') return true;
+    if (piece.color === 'b' && to[1] === '1') return true;
+    
+    return false;
+}
+
+
 function finalizeMove() {
-    playPlim();
-    draw();
-    if (checkGameOver()) return;
-    document.getElementById('status').innerText = "Master thinking...";
-    setTimeout(mestrePlay, 1000);
+    playPlim();
+    draw();
+    if (checkGameOver()) return;
+    
+    document.getElementById('status').innerText = "Mestre a pensar...";
+    
+    // Calcula o delay com base na fase do jogo
+    const delay = getMestreDelay();
+    setTimeout(mestrePlay, delay);
+}
+
+function getMestreDelay() {
+    const lancesTotais = game.history().length;
+    let min, max;
+
+    if (lancesTotais <= 20) { 
+        // Abertura: até o lance 10 de cada (20 movimentos totais)
+        min = 1000; max = 2000;
+    } else if (lancesTotais <= 60) {
+        // Meio-jogo: até o lance 30 de cada (60 movimentos totais)
+        min = 3000; max = 6000;
+    } else {
+        // Final: após o lance 30
+        min = 2000; max = 4000;
+    }
+
+    return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 function mestrePlay() {
-    if (isGameOver) return;
-    stockfish.postMessage("position fen " + game.fen());
-    stockfish.postMessage("go movetime 1000");
-    stockfish.onmessage = (e) => {
-        if (e.data.includes("bestmove")) {
-            const move = e.data.split(" ")[1];
-            game.move(move, { sloppy: true });
-            playPlim();
-            draw();
-            if (!checkGameOver()) document.getElementById('status').innerText = "Your turn!";
-        }
-    };
+    if (isGameOver) return;
+    
+    // Mantemos o movetime do engine em 1000ms para garantir qualidade no lance
+    stockfish.postMessage("position fen " + game.fen());
+    stockfish.postMessage("go movetime 1000");
+    
+    stockfish.onmessage = (e) => {
+        if (e.data.includes("bestmove")) {
+            const move = e.data.split(" ")[1];
+            
+            // Pequeno truque: se o engine respondeu MUITO rápido (antes do delay visual), 
+            // a gente garante que o movimento só apareça após o processamento.
+            game.move(move, { sloppy: true });
+            playPlim();
+            draw();
+            if (!checkGameOver()) {
+                document.getElementById('status').innerText = "Tua vez!";
+            }
+        }
+    };
 }
 
 document.getElementById('keyboard-input').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && !isGameOver) {
-        const move = game.move(this.value);
-        if (move) {
-            this.value = '';
-            finalizeMove();
-        }
-    }
+    if (e.key === 'Enter' && !isGameOver) {
+        const input = this.value;
+        const move = game.move(input);
+        if (move) {
+            this.value = '';
+            finalizeMove();
+        } else {
+            this.style.backgroundColor = '#500';
+            setTimeout(() => this.style.backgroundColor = '#333', 300);
+        }
+    }
 });
 
 function novoJogo() {
-    const mestres = ["Anand", "Carlsen", "Fischer", "Kasparov", "Tal"];
-    const mestre = mestres[Math.floor(Math.random() * mestres.length)];
-    document.getElementById('nome-mestre').innerText = mestre.toUpperCase();
-    document.getElementById('foto-mestre').src = `https://raw.githubusercontent.com/lichess-org/lila/master/public/images/mestre/${mestre.toLowerCase()}.jpg`; // Placeholder path
-    
-    game.reset();
-    isGameOver = false;
-    userColor = Math.random() > 0.5 ? 'w' : 'b'; 
-    document.getElementById('status').innerText = `You are playing as ${userColor === 'w' ? 'White' : 'Black'}!`;
-    draw();
-    if (userColor === 'b') setTimeout(mestrePlay, 1000); 
+    const mestres = ["Anand", "Capablanca", "Carlsen", "Fischer", "Karpov", "Keres", "Lasker", "Marshall", "Polgar", "Rubinstein", "Tal"];
+    const mestre = mestres[Math.floor(Math.random() * mestres.length)];
+    document.getElementById('nome-mestre').innerText = mestre.toUpperCase();
+    document.getElementById('foto-mestre').src = mestre + ".jpg";
+    
+    game.reset();
+    isGameOver = false;
+    document.getElementById('keyboard-input').disabled = false;
+    document.getElementById('btn-resign').disabled = false;
+    document.getElementById('status').style.color = "#aaa";
+    
+    userColor = Math.random() > 0.5 ? 'w' : 'b'; 
+    game.header('White', userColor === 'w' ? 'Tu' : mestre, 'Black', userColor === 'b' ? 'Tu' : mestre);
+    
+    selectedSquare = null;
+    document.getElementById('keyboard-input').value = '';
+    document.getElementById('status').innerText = `Estás de ${userColor === 'w' ? 'Brancas' : 'Pretas'}!`;
+    draw();
+
+    if (userColor === 'b') setTimeout(mestrePlay, 1000); 
 }
 
 window.onload = novoJogo;
