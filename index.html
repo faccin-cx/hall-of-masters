@@ -15,6 +15,17 @@
             margin: 0; 
         }
 
+
+        .piece {
+            filter: none !important;
+            mix-blend-mode: normal !important;
+            opacity: 1 !important;
+        }
+
+        .square {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
         /* Garante que as peças mantenham as cores originais mesmo em Dark Mode do sistema */
         .piece {
             filter: none !important;
@@ -445,6 +456,7 @@ document.getElementById('btn-sorteio').onclick = novoJogo;
 </script>
 </body>
 </html>
+
 
 
 
