@@ -329,8 +329,16 @@ function getMestreDelay() {
 
 function mestrePlay() {
     if (isGameOver) return;
+    
+    // Configurações para garantir os 2500 Elo
+    stockfish.postMessage("setoption name Skill Level value 20");
+    stockfish.postMessage("setoption name UCI_LimitStrength value true");
+    stockfish.postMessage("setoption name UCI_Elo value 2500");
+    
     stockfish.postMessage("position fen " + game.fen());
-    stockfish.postMessage("go movetime 1000");
+    
+    // Profundidade 18 é ideal para manter os 2500 Elo de forma estável
+    stockfish.postMessage("go depth 18"); 
     
     stockfish.onmessage = (e) => {
         if (e.data.includes("bestmove")) {
@@ -377,4 +385,5 @@ document.getElementById('btn-sorteio').onclick = novoJogo;
 </script>
 </body>
 </html>
+
 
